@@ -368,7 +368,20 @@
 
     <!-- Main Content -->
     <main>
-        <h2 style="margin-bottom: var(--space-24); font-size: var(--font-size-3xl);">Aubaines en vedette</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-24); flex-wrap: wrap; gap: var(--space-16);">
+            <h2 id="week-title" style="margin: 0; font-size: var(--font-size-3xl);">Aubaines en vedette</h2>
+            <div style="display: flex; gap: var(--space-12); align-items: center;">
+                <button id="prev-week" style="padding: var(--space-8) var(--space-16); border: 1px solid var(--color-border); border-radius: var(--radius-base); background-color: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: var(--font-size-base); transition: background-color 0.2s;">
+                    ← Semaine précédente
+                </button>
+                <select id="week-selector" style="padding: var(--space-8) var(--space-12); border: 1px solid var(--color-border); border-radius: var(--radius-base); background-color: var(--color-surface); color: var(--color-text); font-size: var(--font-size-base); min-width: 200px;">
+                    <option value="">Chargement...</option>
+                </select>
+                <button id="next-week" style="padding: var(--space-8) var(--space-16); border: 1px solid var(--color-border); border-radius: var(--radius-base); background-color: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: var(--font-size-base); transition: background-color 0.2s;">
+                    Semaine suivante →
+                </button>
+            </div>
+        </div>
         
         <!-- Filters -->
         <div class="filters">
@@ -428,6 +441,123 @@
 
         let allItems = [];
         let filteredItems = [];
+        let weekGroups = {};
+        let availableWeeks = [];
+        let currentWeek = null;
+
+        // Calculate ISO 8601 week number from date
+        function getISOWeek(date) {
+            const d = new Date(date);
+            d.setHours(0, 0, 0, 0);
+            // Set to nearest Thursday (current date + 4 - current day number)
+            // Make Sunday's day number 7
+            d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+            // Get first day of year
+            const yearStart = new Date(d.getFullYear(), 0, 1);
+            // Calculate full weeks to nearest Thursday
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return { year: d.getFullYear(), week: weekNo };
+        }
+
+        // Format week for display
+        function formatWeekKey(year, week) {
+            return `${year}-W${String(week).padStart(2, '0')}`;
+        }
+
+        // Parse week key
+        function parseWeekKey(weekKey) {
+            const [year, weekStr] = weekKey.split('-W');
+            return { year: parseInt(year), week: parseInt(weekStr) };
+        }
+
+        // Group items by ISO week
+        function groupItemsByWeek(items) {
+            const groups = {};
+            
+            items.forEach(item => {
+                if (item.date) {
+                    const { year, week } = getISOWeek(item.date);
+                    const weekKey = formatWeekKey(year, week);
+                    
+                    if (!groups[weekKey]) {
+                        groups[weekKey] = [];
+                    }
+                    groups[weekKey].push(item);
+                }
+            });
+            
+            return groups;
+        }
+
+        // Get most recent week
+        function getMostRecentWeek(groups) {
+            const weeks = Object.keys(groups).sort().reverse();
+            return weeks.length > 0 ? weeks[0] : null;
+        }
+
+        // Update week selector dropdown
+        function updateWeekSelector() {
+            const selector = document.getElementById('week-selector');
+            selector.innerHTML = '';
+            
+            availableWeeks.forEach(weekKey => {
+                const { year, week } = parseWeekKey(weekKey);
+                const option = document.createElement('option');
+                option.value = weekKey;
+                option.textContent = `Semaine ${week} de ${year}`;
+                selector.appendChild(option);
+            });
+            
+            if (currentWeek) {
+                selector.value = currentWeek;
+            }
+        }
+
+        // Update navigation buttons state
+        function updateNavigationButtons() {
+            const currentIndex = availableWeeks.indexOf(currentWeek);
+            const prevButton = document.getElementById('prev-week');
+            const nextButton = document.getElementById('next-week');
+            
+            // Previous week (older) is next in the sorted array
+            prevButton.disabled = currentIndex >= availableWeeks.length - 1;
+            prevButton.style.opacity = prevButton.disabled ? '0.5' : '1';
+            prevButton.style.cursor = prevButton.disabled ? 'not-allowed' : 'pointer';
+            
+            // Next week (newer) is previous in the sorted array
+            nextButton.disabled = currentIndex <= 0;
+            nextButton.style.opacity = nextButton.disabled ? '0.5' : '1';
+            nextButton.style.cursor = nextButton.disabled ? 'not-allowed' : 'pointer';
+        }
+
+        // Display items for selected week
+        function displayWeekItems(weekKey) {
+            currentWeek = weekKey;
+            const { year, week } = parseWeekKey(weekKey);
+            
+            // Update title
+            document.getElementById('week-title').textContent = `Aubaines de la semaine ${week}`;
+            
+            // Get items for this week
+            const weekItems = weekGroups[weekKey] || [];
+            
+            // Apply existing filters to week items
+            const storeFilter = document.getElementById('filter-store').value.toLowerCase();
+            const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
+            const brandFilter = document.getElementById('filter-brand').value.toLowerCase();
+            
+            filteredItems = weekItems.filter(item => {
+                const matchStore = !storeFilter || (item.store_name && item.store_name.toLowerCase() === storeFilter);
+                const matchCategory = !categoryFilter || (item.categorie && item.categorie.toLowerCase() === categoryFilter);
+                const matchBrand = !brandFilter || (item.brand && item.brand.toLowerCase().includes(brandFilter));
+                
+                return matchStore && matchCategory && matchBrand;
+            });
+            
+            displayItems(filteredItems);
+            updateWeekSelector();
+            updateNavigationButtons();
+        }
 
         // Fetch data from Supabase
         async function fetchItems() {
@@ -440,9 +570,23 @@
                 if (error) throw error;
 
                 allItems = data;
-                filteredItems = data;
+                
+                // Group items by week
+                weekGroups = groupItemsByWeek(data);
+                availableWeeks = Object.keys(weekGroups).sort().reverse();
+                
+                // Get most recent week
+                currentWeek = getMostRecentWeek(weekGroups);
+                
                 populateFilters();
-                displayItems(filteredItems);
+                
+                if (currentWeek) {
+                    displayWeekItems(currentWeek);
+                } else {
+                    filteredItems = data;
+                    displayItems(filteredItems);
+                }
+                
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
                 console.error('Erreur lors du chargement:', error);
@@ -564,25 +708,50 @@
 
         // Filter items
         function filterItems() {
-            const storeFilter = document.getElementById('filter-store').value.toLowerCase();
-            const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
-            const brandFilter = document.getElementById('filter-brand').value.toLowerCase();
+            if (currentWeek) {
+                displayWeekItems(currentWeek);
+            } else {
+                const storeFilter = document.getElementById('filter-store').value.toLowerCase();
+                const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
+                const brandFilter = document.getElementById('filter-brand').value.toLowerCase();
 
-            filteredItems = allItems.filter(item => {
-                const matchStore = !storeFilter || (item.store_name && item.store_name.toLowerCase() === storeFilter);
-                const matchCategory = !categoryFilter || (item.categorie && item.categorie.toLowerCase() === categoryFilter);
-                const matchBrand = !brandFilter || (item.brand && item.brand.toLowerCase().includes(brandFilter));
-                
-                return matchStore && matchCategory && matchBrand;
-            });
+                filteredItems = allItems.filter(item => {
+                    const matchStore = !storeFilter || (item.store_name && item.store_name.toLowerCase() === storeFilter);
+                    const matchCategory = !categoryFilter || (item.categorie && item.categorie.toLowerCase() === categoryFilter);
+                    const matchBrand = !brandFilter || (item.brand && item.brand.toLowerCase().includes(brandFilter));
+                    
+                    return matchStore && matchCategory && matchBrand;
+                });
 
-            displayItems(filteredItems);
+                displayItems(filteredItems);
+            }
         }
 
         // Event listeners for filters
         document.getElementById('filter-store').addEventListener('change', filterItems);
         document.getElementById('filter-category').addEventListener('change', filterItems);
         document.getElementById('filter-brand').addEventListener('input', filterItems);
+        
+        // Event listeners for week navigation
+        document.getElementById('week-selector').addEventListener('change', (e) => {
+            if (e.target.value) {
+                displayWeekItems(e.target.value);
+            }
+        });
+        
+        document.getElementById('prev-week').addEventListener('click', () => {
+            const currentIndex = availableWeeks.indexOf(currentWeek);
+            if (currentIndex < availableWeeks.length - 1) {
+                displayWeekItems(availableWeeks[currentIndex + 1]);
+            }
+        });
+        
+        document.getElementById('next-week').addEventListener('click', () => {
+            const currentIndex = availableWeeks.indexOf(currentWeek);
+            if (currentIndex > 0) {
+                displayWeekItems(availableWeeks[currentIndex - 1]);
+            }
+        });
 
         // Initialize the app
         fetchItems();
