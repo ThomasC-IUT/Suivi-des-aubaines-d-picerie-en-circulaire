@@ -474,6 +474,49 @@
             });
         }
 
+        // Calculate unit price for display (price per 100g, per L, or per unit)
+        function calculateUnitPrice(item) {
+            if (!item.unit_price || !item.quantity || !item.unit) {
+                return '';
+            }
+
+            const quantity = parseFloat(item.quantity);
+            const unitPrice = parseFloat(item.unit_price);
+            const unit = item.unit.toLowerCase();
+
+            // If unit is "un" (unité), show price per unit
+            if (unit === 'un') {
+                return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${unitPrice.toFixed(2)} $/unité)</span>`;
+            }
+
+            // For grams, calculate price per 100g
+            if (unit === 'g') {
+                const pricePer100g = (unitPrice / quantity) * 100;
+                return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${pricePer100g.toFixed(2)} $/100g)</span>`;
+            }
+
+            // For kg, calculate price per kg
+            if (unit === 'kg') {
+                const pricePerKg = unitPrice / quantity;
+                return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${pricePerKg.toFixed(2)} $/kg)</span>`;
+            }
+
+            // For ml, calculate price per L
+            if (unit === 'ml') {
+                const pricePerL = (unitPrice / quantity) * 1000;
+                return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${pricePerL.toFixed(2)} $/L)</span>`;
+            }
+
+            // For L, calculate price per L
+            if (unit === 'l') {
+                const pricePerL = unitPrice / quantity;
+                return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${pricePerL.toFixed(2)} $/L)</span>`;
+            }
+
+            // For other units, show price per unit
+            return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${(unitPrice / quantity).toFixed(2)} $/${unit})</span>`;
+        }
+
         // Display items in the grid
         function displayItems(items) {
             const container = document.getElementById('items-container');
@@ -504,7 +547,12 @@
                         ` : ''}
                     </div>
                     <div class="item-price">
-                        ${item.unit_price ? `${item.unit_price.toFixed(2)} $` : 'Prix non disponible'}
+                        ${item.unit_price ? `
+                            <div style="display: flex; align-items: baseline; gap: var(--space-8);">
+                                <span style="font-size: var(--font-size-2xl); font-weight: 600;">${item.unit_price.toFixed(2)} $</span>
+                                ${calculateUnitPrice(item)}
+                            </div>
+                        ` : 'Prix non disponible'}
                     </div>
                     <div class="item-store">
                         <span class="store-name">${item.store_name || 'Magasin inconnu'}</span>
