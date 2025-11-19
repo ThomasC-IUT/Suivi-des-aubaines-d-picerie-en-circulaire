@@ -1,1 +1,543 @@
 <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi des aubaines d'épicerie en circulaire</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --color-cream-50: rgba(252, 252, 249, 1);
+            --color-cream-100: rgba(255, 255, 253, 1);
+            --color-gray-200: rgba(245, 245, 245, 1);
+            --color-gray-300: rgba(167, 169, 169, 1);
+            --color-slate-500: rgba(98, 108, 113, 1);
+            --color-brown-600: rgba(94, 82, 64, 1);
+            --color-charcoal-700: rgba(31, 33, 33, 1);
+            --color-charcoal-800: rgba(38, 40, 40, 1);
+            --color-slate-900: rgba(19, 52, 59, 1);
+            --color-teal-300: rgba(50, 184, 198, 1);
+            --color-teal-500: rgba(33, 128, 141, 1);
+            --color-teal-600: rgba(29, 116, 128, 1);
+            --color-teal-700: rgba(26, 104, 115, 1);
+            --color-brown-600-rgb: 94, 82, 64;
+            --color-teal-500-rgb: 33, 128, 141;
+            --color-slate-900-rgb: 19, 52, 59;
+            --color-background: var(--color-cream-50);
+            --color-surface: var(--color-cream-100);
+            --color-text: var(--color-slate-900);
+            --color-text-secondary: var(--color-slate-500);
+            --color-primary: var(--color-teal-500);
+            --color-primary-hover: var(--color-teal-600);
+            --color-primary-active: var(--color-teal-700);
+            --color-border: rgba(var(--color-brown-600-rgb), 0.2);
+            --color-card-border: rgba(var(--color-brown-600-rgb), 0.12);
+            --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-size-sm: 12px;
+            --font-size-base: 14px;
+            --font-size-lg: 16px;
+            --font-size-xl: 18px;
+            --font-size-2xl: 20px;
+            --font-size-3xl: 24px;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+            --radius-base: 8px;
+            --radius-lg: 12px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-gray-400-rgb: 119, 124, 124;
+                --color-teal-300-rgb: 50, 184, 198;
+                --color-gray-200-rgb: 245, 245, 245;
+                --color-background: var(--color-charcoal-700);
+                --color-surface: var(--color-charcoal-800);
+                --color-text: var(--color-gray-200);
+                --color-text-secondary: rgba(var(--color-gray-300), 0.7);
+                --color-primary: var(--color-teal-300);
+                --color-border: rgba(var(--color-gray-400-rgb), 0.3);
+                --color-card-border: rgba(var(--color-gray-400-rgb), 0.2);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background-color: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            padding: var(--space-16) var(--space-24);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo h1 {
+            font-size: var(--font-size-2xl);
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        .logo p {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: var(--space-24);
+        }
+
+        nav a {
+            color: var(--color-text);
+            text-decoration: none;
+            font-size: var(--font-size-base);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--color-primary);
+        }
+
+        /* Main Content Styles */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-24);
+            flex: 1;
+        }
+
+        .filters {
+            background-color: var(--color-surface);
+            padding: var(--space-16);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-card-border);
+            margin-bottom: var(--space-24);
+            display: flex;
+            gap: var(--space-16);
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: var(--space-8);
+            font-weight: 500;
+            font-size: var(--font-size-sm);
+        }
+
+        .filter-group select, .filter-group input {
+            width: 100%;
+            padding: var(--space-8) var(--space-12);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            background-color: var(--color-background);
+            color: var(--color-text);
+            font-size: var(--font-size-base);
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-20);
+        }
+
+        .item-card {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-card-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-16);
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: var(--space-12);
+        }
+
+        .item-name {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .item-category {
+            background-color: var(--color-primary);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: var(--font-size-sm);
+        }
+
+        .item-details {
+            margin: var(--space-12) 0;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--space-8);
+            font-size: var(--font-size-sm);
+        }
+
+        .detail-label {
+            color: var(--color-text-secondary);
+        }
+
+        .detail-value {
+            font-weight: 500;
+        }
+
+        .item-price {
+            font-size: var(--font-size-xl);
+            font-weight: 600;
+            color: var(--color-primary);
+            margin: var(--space-12) 0;
+        }
+
+        .item-store {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: var(--space-12);
+            border-top: 1px solid var(--color-border);
+        }
+
+        .store-name {
+            font-weight: 500;
+        }
+
+        .item-date {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: var(--space-24);
+            font-size: var(--font-size-lg);
+            color: var(--color-text-secondary);
+        }
+
+        .error {
+            background-color: rgba(192, 21, 47, 0.1);
+            border: 1px solid rgba(192, 21, 47, 0.3);
+            color: rgba(192, 21, 47, 1);
+            padding: var(--space-16);
+            border-radius: var(--radius-base);
+            margin-bottom: var(--space-24);
+        }
+
+        /* Footer Styles */
+        footer {
+            background-color: var(--color-surface);
+            border-top: 1px solid var(--color-border);
+            padding: var(--space-24);
+            margin-top: auto;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-16);
+        }
+
+        .footer-info {
+            flex: 1;
+        }
+
+        .footer-info h3 {
+            font-size: var(--font-size-lg);
+            color: var(--color-primary);
+            margin-bottom: var(--space-8);
+        }
+
+        .footer-info p {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+        }
+
+        .footer-links ul {
+            list-style: none;
+            display: flex;
+            gap: var(--space-16);
+        }
+
+        .footer-links a {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-size: var(--font-size-sm);
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--color-primary);
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: var(--space-16);
+                text-align: center;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: var(--space-12);
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-container {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-links ul {
+                flex-direction: column;
+                gap: var(--space-8);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Component -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <h1>🛒 Aubaines Épicerie</h1>
+                <p>Suivi des circulaires du Québec</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#accueil">Accueil</a></li>
+                    <li><a href="#aubaines">Aubaines</a></li>
+                    <li><a href="#magasins">Magasins</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h2 style="margin-bottom: var(--space-24); font-size: var(--font-size-3xl);">Aubaines en vedette</h2>
+        
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-group">
+                <label for="filter-store">Magasin</label>
+                <select id="filter-store">
+                    <option value="">Tous les magasins</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filter-category">Catégorie</label>
+                <select id="filter-category">
+                    <option value="">Toutes les catégories</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filter-brand">Marque</label>
+                <input type="text" id="filter-brand" placeholder="Rechercher une marque...">
+            </div>
+        </div>
+
+        <div id="error-message"></div>
+        <div id="loading" class="loading">Chargement des aubaines...</div>
+        <div id="items-container" class="items-grid"></div>
+    </main>
+
+    <!-- Footer Component -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-info">
+                <h3>Aubaines Épicerie</h3>
+                <p>Votre source pour les meilleures aubaines d'épicerie au Québec</p>
+                <p style="margin-top: var(--space-8);">&copy; 2025 Aubaines Épicerie. Tous droits réservés.</p>
+            </div>
+            <div class="footer-links">
+                <ul>
+                    <li><a href="#a-propos">À propos</a></li>
+                    <li><a href="#confidentialite">Confidentialité</a></li>
+                    <li><a href="#conditions">Conditions</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Supabase client
+        const SUPABASE_URL = 'https://uusnmuuysekydjtkkjjb.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1c25tdXV5c2VreWRqdGtrampiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0Mjc3MDksImV4cCI6MjA3OTAwMzcwOX0.6rRP22MpPe4QYL-Ibx-k764aS1AyT3X2OwSrytKU5sY';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false
+            }
+        });
+
+        let allItems = [];
+        let filteredItems = [];
+
+        // Fetch data from Supabase
+        async function fetchItems() {
+            try {
+                const { data, error } = await supabase
+                    .from('itemCirculaire')
+                    .select('*')
+                    .order('date', { ascending: false });
+
+                if (error) throw error;
+
+                allItems = data;
+                filteredItems = data;
+                populateFilters();
+                displayItems(filteredItems);
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                console.error('Erreur lors du chargement:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error-message').innerHTML = 
+                    `<div class="error">Erreur lors du chargement des données: ${error.message}</div>`;
+            }
+        }
+
+        // Populate filter dropdowns
+        function populateFilters() {
+            const stores = [...new Set(allItems.map(item => item.store_name))].filter(Boolean).sort();
+            const categories = [...new Set(allItems.map(item => item.categorie))].filter(Boolean).sort();
+
+            const storeSelect = document.getElementById('filter-store');
+            stores.forEach(store => {
+                const option = document.createElement('option');
+                option.value = store;
+                option.textContent = store;
+                storeSelect.appendChild(option);
+            });
+
+            const categorySelect = document.getElementById('filter-category');
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        // Display items in the grid
+        function displayItems(items) {
+            const container = document.getElementById('items-container');
+            
+            if (items.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--color-text-secondary); grid-column: 1/-1;">Aucune aubaine trouvée.</p>';
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <div class="item-card">
+                    <div class="item-header">
+                        <div class="item-name">${item.item || 'Sans nom'}</div>
+                        ${item.categorie ? `<div class="item-category">${item.categorie}</div>` : ''}
+                    </div>
+                    <div class="item-details">
+                        ${item.brand ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Marque:</span>
+                            <span class="detail-value">${item.brand}</span>
+                        </div>
+                        ` : ''}
+                        ${item.unit ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Unité:</span>
+                            <span class="detail-value">${item.quantity || 1} ${item.unit}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="item-price">
+                        ${item.unit_price ? `${item.unit_price.toFixed(2)} $` : 'Prix non disponible'}
+                    </div>
+                    <div class="item-store">
+                        <span class="store-name">${item.store_name || 'Magasin inconnu'}</span>
+                        <span class="item-date">${item.date ? new Date(item.date).toLocaleDateString('fr-CA') : ''}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter items
+        function filterItems() {
+            const storeFilter = document.getElementById('filter-store').value.toLowerCase();
+            const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
+            const brandFilter = document.getElementById('filter-brand').value.toLowerCase();
+
+            filteredItems = allItems.filter(item => {
+                const matchStore = !storeFilter || (item.store_name && item.store_name.toLowerCase() === storeFilter);
+                const matchCategory = !categoryFilter || (item.categorie && item.categorie.toLowerCase() === categoryFilter);
+                const matchBrand = !brandFilter || (item.brand && item.brand.toLowerCase().includes(brandFilter));
+                
+                return matchStore && matchCategory && matchBrand;
+            });
+
+            displayItems(filteredItems);
+        }
+
+        // Event listeners for filters
+        document.getElementById('filter-store').addEventListener('change', filterItems);
+        document.getElementById('filter-category').addEventListener('change', filterItems);
+        document.getElementById('filter-brand').addEventListener('input', filterItems);
+
+        // Initialize the app
+        fetchItems();
+    </script>
+</body>
+</html>
