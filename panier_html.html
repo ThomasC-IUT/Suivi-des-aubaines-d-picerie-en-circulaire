@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Panier</title>
+    <link rel="stylesheet" href="panier.css">
+</head>
+<body>
+
+<header>
+    <img src="logo.png" alt="Logo" id="logo">
+    <h1>Panier d'épicerie</h1>
+    <a href="panier.html" id="header-cart">
+        <svg viewBox="0 0 64 64" width="32" height="32" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 6h8l8 32h32l8-24H18" stroke="currentColor" stroke-width="4" fill="none"/>
+            <circle cx="24" cy="54" r="4" fill="currentColor"/>
+            <circle cx="48" cy="54" r="4" fill="currentColor"/>
+        </svg>
+    </a>
+</header>
+
+<div id="container">
+
+    <nav id="menu">
+        <ul>
+            <li><a href="index.html">Accueil</a></li>
+            <li><a href="recherche.html">Recherche</a></li>
+            <li><a href="circulaires.html">Circulaires</a></li>
+            <li><a href="panier.html">Panier</a></li>
+        </ul>
+    </nav>
+
+    <main id="content">
+
+        <!-- Contrôles de tri -->
+        <div id="cart-controls">
+            <label for="sort">Trier par :</label>
+            <select id="sort" onchange="sortItems()">
+                <option value="price-asc">Prix ↑</option>
+                <option value="price-desc">Prix ↓</option>
+                <option value="store-asc">Épicier A→Z</option>
+            </select>
+        </div>
+
+        <!-- Grille des items -->
+        <div id="cart-items">
+            <!-- Les items seront ajoutés dynamiquement ici -->
+        </div>
+
+        <!-- Boutons Export / E-mail centrés -->
+        <div id="cart-actions" style="text-align:center; margin-top:20px;">
+            <button onclick="exportPDF()">Exporter en PDF</button>
+            <button onclick="sendEmail()">Envoyer par e-mail</button>
+        </div>
+
+    </main>
+
+</div>
+
+<script src="panier.js"></script>
+</body>
+</html>

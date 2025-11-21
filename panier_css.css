@@ -1,0 +1,153 @@
+/* Corps et police */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Header */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: #f2f2f2;
+    padding: 20px 0;
+}
+
+#logo {
+    position: absolute;
+    left: 20px;
+    width: 80px;
+    height: 80px;
+    background: lightgray;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+#header-cart {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#header-cart:hover {
+    background-color: #e6e6e6;
+}
+
+#header-cart svg {
+    width: 100%;
+    height: 100%;
+    color: #333;
+}
+
+/* Conteneur général */
+#container {
+    display: flex;
+    height: calc(100vh - 120px);
+}
+
+/* Menu gauche */
+#menu {
+    width: 200px;
+    background: #e6e6e6;
+    padding: 20px;
+}
+
+#menu ul {
+    list-style: none;
+    padding: 0;
+}
+
+#menu li {
+    margin-bottom: 15px;
+}
+
+#menu a {
+    text-decoration: none;
+    font-size: 18px;
+    color: #333;
+}
+
+/* Zone centrale */
+#content {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* Contrôles de tri */
+#cart-controls {
+    margin-bottom: 20px;
+}
+
+/* Grille des items */
+#cart-items {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); /* 7 cartes par ligne */
+    gap: 40px 8px; /* même espace horizontal et vertical */
+}
+
+/* Carte produit style "Pokémon" */
+.cart-item {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid lightgray;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s;
+    background: #fafafa;
+    height: 320px; /* hauteur inchangée */
+    width: 200px;  /* largeur ajustée pour tenir 7 cartes */
+    position: relative;
+    padding-bottom: 10px; /* espace pour le bouton */
+}
+
+.cart-item:hover {
+    transform: scale(1.05);
+}
+
+/* Partie haute - carré image centré */
+.cart-item .photo-placeholder {
+    width: 170px;  
+    height: 120px;
+    background: #d9d9d9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-weight: bold;
+    font-size: 16px;
+    margin: 15px auto 10px auto;  
+    border: 2px solid lightgray;
+    border-radius: 8px;
+}
+
+/* Partie basse - infos alignées à gauche */
+.cart-item .info {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex-grow: 1;
+    text-align: left;
+}
+
+.cart-item .info span {
+    margin-bottom: 5px;
+}
+
+/* Bouton supprimer avec espace autour */
+.cart-item button {
+    margin: 5px 10px 0 10px;
+    padding: 5px;
+    cursor: pointer;
+}
