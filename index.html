@@ -398,8 +398,8 @@
                 </select>
             </div>
             <div class="filter-group">
-                <label for="filter-brand">Marque</label>
-                <input type="text" id="filter-brand" placeholder="Rechercher une marque...">
+                <label for="filter-search">Recherche</label>
+                <input type="text" id="filter-search" placeholder="Rechercher un article ou une marque...">
             </div>
         </div>
 
@@ -544,14 +544,18 @@
             // Apply existing filters to week items
             const storeFilter = document.getElementById('filter-store').value.toLowerCase();
             const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
-            const brandFilter = document.getElementById('filter-brand').value.toLowerCase();
+            const searchFilter = document.getElementById('filter-search').value.toLowerCase();
             
             filteredItems = weekItems.filter(item => {
                 const matchStore = !storeFilter || (item.store_name && item.store_name.toLowerCase() === storeFilter);
                 const matchCategory = !categoryFilter || (item.categorie && item.categorie.toLowerCase() === categoryFilter);
-                const matchBrand = !brandFilter || (item.brand && item.brand.toLowerCase().includes(brandFilter));
                 
-                return matchStore && matchCategory && matchBrand;
+                // Enhanced search: check both item name and brand
+                const matchSearch = !searchFilter || 
+                    (item.item && item.item.toLowerCase().includes(searchFilter)) ||
+                    (item.brand && item.brand.toLowerCase().includes(searchFilter));
+                
+                return matchStore && matchCategory && matchSearch;
             });
             
             displayItems(filteredItems);
@@ -713,14 +717,18 @@
             } else {
                 const storeFilter = document.getElementById('filter-store').value.toLowerCase();
                 const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
-                const brandFilter = document.getElementById('filter-brand').value.toLowerCase();
+                const searchFilter = document.getElementById('filter-search').value.toLowerCase();
 
                 filteredItems = allItems.filter(item => {
                     const matchStore = !storeFilter || (item.store_name && item.store_name.toLowerCase() === storeFilter);
                     const matchCategory = !categoryFilter || (item.categorie && item.categorie.toLowerCase() === categoryFilter);
-                    const matchBrand = !brandFilter || (item.brand && item.brand.toLowerCase().includes(brandFilter));
                     
-                    return matchStore && matchCategory && matchBrand;
+                    // Enhanced search: check both item name and brand
+                    const matchSearch = !searchFilter || 
+                        (item.item && item.item.toLowerCase().includes(searchFilter)) ||
+                        (item.brand && item.brand.toLowerCase().includes(searchFilter));
+                    
+                    return matchStore && matchCategory && matchSearch;
                 });
 
                 displayItems(filteredItems);
@@ -730,7 +738,7 @@
         // Event listeners for filters
         document.getElementById('filter-store').addEventListener('change', filterItems);
         document.getElementById('filter-category').addEventListener('change', filterItems);
-        document.getElementById('filter-brand').addEventListener('input', filterItems);
+        document.getElementById('filter-search').addEventListener('input', filterItems);
         
         // Event listeners for week navigation
         document.getElementById('week-selector').addEventListener('change', (e) => {
