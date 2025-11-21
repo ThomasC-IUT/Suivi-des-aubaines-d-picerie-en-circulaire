@@ -141,6 +141,7 @@
             display: flex;
             gap: var(--space-16);
             flex-wrap: wrap;
+            align-items: start;
         }
 
         .filter-group {
@@ -155,7 +156,7 @@
             font-size: var(--font-size-sm);
         }
 
-        .filter-group select, .filter-group input {
+        .filter-group select, .filter-group input[type="text"] {
             width: 100%;
             padding: var(--space-8) var(--space-12);
             border: 1px solid var(--color-border);
@@ -163,6 +164,59 @@
             background-color: var(--color-background);
             color: var(--color-text);
             font-size: var(--font-size-base);
+        }
+
+        /* Store Checkbox Styles */
+        .store-selector {
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            background-color: var(--color-background);
+            overflow: hidden;
+        }
+
+        .store-controls {
+            padding: var(--space-8);
+            border-bottom: 1px solid var(--color-border);
+            background-color: rgba(0,0,0,0.03);
+            display: flex;
+            gap: var(--space-8);
+            justify-content: space-between;
+        }
+
+        .store-control-btn {
+            font-size: var(--font-size-sm);
+            background: none;
+            border: none;
+            color: var(--color-primary);
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .store-control-btn:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .store-list {
+            max-height: 150px;
+            overflow-y: auto;
+            padding: var(--space-8);
+        }
+
+        .store-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: var(--space-8);
+            padding: 4px 0;
+            cursor: pointer;
+            font-size: var(--font-size-base);
+            user-select: none;
+        }
+
+        .store-checkbox-label input {
+            accent-color: var(--color-primary);
+            width: 16px;
+            height: 16px;
         }
 
         .items-grid {
@@ -386,10 +440,16 @@
         <!-- Filters -->
         <div class="filters">
             <div class="filter-group">
-                <label for="filter-store">Magasin</label>
-                <select id="filter-store">
-                    <option value="">Tous les magasins</option>
-                </select>
+                <label>Magasins</label>
+                <div class="store-selector">
+                    <div class="store-controls">
+                        <button type="button" id="btn-select-all-stores" class="store-control-btn">Tout cocher</button>
+                        <button type="button" id="btn-deselect-all-stores" class="store-control-btn">Tout décocher</button>
+                    </div>
+                    <div id="store-list-container" class="store-list">
+                        <!-- Checkboxes will be injected here -->
+                    </div>
+                </div>
             </div>
             <div class="filter-group">
                 <label for="filter-category">Catégorie</label>
@@ -621,12 +681,14 @@
             const weekItems = weekGroups[weekKey] || [];
             
             // Apply existing filters to week items
-            const storeFilter = document.getElementById('filter-store').value.toLowerCase();
             const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
             const searchFilter = document.getElementById('filter-search').value.toLowerCase();
             
+            // Get selected stores
+            const checkedStores = Array.from(document.querySelectorAll('input[name="store-select"]:checked')).map(cb => cb.value);
+
             let filtered = weekItems.filter(item => {
-                const matchStore = !storeFilter || (item.store_name && item.store_name.toLowerCase() === storeFilter);
+                const matchStore = !item.store_name || checkedStores.includes(item.store_name);
                 const matchCategory = !categoryFilter || (item.categorie && item.categorie.toLowerCase() === categoryFilter);
                 
                 // Enhanced search: check both item name and brand
@@ -669,7 +731,18 @@
                 if (currentWeek) {
                     displayWeekItems(currentWeek);
                 } else {
-                    filteredItems = data;
+                    // Fallback if no weeks
+                    const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
+                    const searchFilter = document.getElementById('filter-search').value.toLowerCase();
+                    const checkedStores = Array.from(document.querySelectorAll('input[name="store-select"]:checked')).map(cb => cb.value);
+                    
+                    filteredItems = data.filter(item => {
+                         const matchStore = !item.store_name || checkedStores.includes(item.store_name);
+                         const matchCategory = !categoryFilter || (item.categorie && item.categorie.toLowerCase() === categoryFilter);
+                         return matchStore && matchCategory;
+                    });
+                    
+                    filteredItems = sortItems(filteredItems);
                     displayItems(filteredItems);
                 }
                 
@@ -682,20 +755,37 @@
             }
         }
 
-        // Populate filter dropdowns
+        // Populate filter dropdowns and checkboxes
         function populateFilters() {
             const stores = [...new Set(allItems.map(item => item.store_name))].filter(Boolean).sort();
             const categories = [...new Set(allItems.map(item => item.categorie))].filter(Boolean).sort();
 
-            const storeSelect = document.getElementById('filter-store');
+            // Populate Store Checkboxes
+            const storeContainer = document.getElementById('store-list-container');
+            storeContainer.innerHTML = '';
+            
             stores.forEach(store => {
-                const option = document.createElement('option');
-                option.value = store;
-                option.textContent = store;
-                storeSelect.appendChild(option);
+                const label = document.createElement('label');
+                label.className = 'store-checkbox-label';
+                
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.name = 'store-select';
+                input.value = store;
+                input.checked = true; // Default select all
+                input.addEventListener('change', filterItems);
+                
+                label.appendChild(input);
+                label.appendChild(document.createTextNode(store));
+                storeContainer.appendChild(label);
             });
 
+            // Populate Category Dropdown
             const categorySelect = document.getElementById('filter-category');
+            // Keep first option (All)
+            while (categorySelect.options.length > 1) {
+                categorySelect.remove(1);
+            }
             categories.forEach(category => {
                 const option = document.createElement('option');
                 option.value = category;
@@ -703,6 +793,19 @@
                 categorySelect.appendChild(option);
             });
         }
+
+        // Helper functions for store selection
+        document.getElementById('btn-select-all-stores').addEventListener('click', () => {
+            const checkboxes = document.querySelectorAll('input[name="store-select"]');
+            checkboxes.forEach(cb => cb.checked = true);
+            filterItems();
+        });
+
+        document.getElementById('btn-deselect-all-stores').addEventListener('click', () => {
+            const checkboxes = document.querySelectorAll('input[name="store-select"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            filterItems();
+        });
 
         // Calculate unit price for display (standardisé : 100g / 100ml / unité)
         function calculateUnitPrice(item) {
@@ -755,7 +858,7 @@
             const container = document.getElementById('items-container');
             
             if (items.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: var(--color-text-secondary); grid-column: 1/-1;">Aucune aubaine trouvée.</p>';
+                container.innerHTML = '<p style="text-align: center; color: var(--color-text-secondary); grid-column: 1/-1;">Aucune aubaine trouvée pour les critères sélectionnés.</p>';
                 return;
             }
 
@@ -800,12 +903,12 @@
             if (currentWeek) {
                 displayWeekItems(currentWeek);
             } else {
-                const storeFilter = document.getElementById('filter-store').value.toLowerCase();
                 const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
                 const searchFilter = document.getElementById('filter-search').value.toLowerCase();
+                const checkedStores = Array.from(document.querySelectorAll('input[name="store-select"]:checked')).map(cb => cb.value);
 
                 let filtered = allItems.filter(item => {
-                    const matchStore = !storeFilter || (item.store_name && item.store_name.toLowerCase() === storeFilter);
+                    const matchStore = !item.store_name || checkedStores.includes(item.store_name);
                     const matchCategory = !categoryFilter || (item.categorie && item.categorie.toLowerCase() === categoryFilter);
                     
                     // Enhanced search: check both item name and brand
@@ -824,7 +927,7 @@
         }
 
         // Event listeners for filters
-        document.getElementById('filter-store').addEventListener('change', filterItems);
+        // Store checkboxes listener is added dynamically in populateFilters
         document.getElementById('filter-category').addEventListener('change', filterItems);
         document.getElementById('filter-sort').addEventListener('change', filterItems);
         document.getElementById('filter-search').addEventListener('input', filterItems);
