@@ -1,0 +1,111 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Bandeau */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: #f2f2f2;
+    padding: 20px 0;
+}
+
+#logo {
+    position: absolute;
+    left: 20px;
+    width: 80px;
+    height: 80px;
+    background: lightgray;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+/* Conteneur général */
+#container {
+    display: flex;
+    height: calc(100vh - 120px);
+}
+
+/* Menu gauche */
+#menu {
+    width: 200px;
+    background: #e6e6e6;
+    padding: 20px;
+}
+
+#menu ul {
+    list-style: none;
+    padding: 0;
+}
+
+#menu li {
+    margin-bottom: 15px;
+}
+
+#menu a {
+    text-decoration: none;
+    font-size: 18px;
+    color: #333;
+}
+
+/* Zone centrale */
+#content {
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 40px;
+}
+
+.flyer-card {
+    width: 250px;              /* largeur du rectangle */
+    height: 150px;             /* hauteur du rectangle */
+    border: 2px solid lightgray; /* cadre gris clair */
+    border-radius: 12px;
+    overflow: hidden;          /* permet à l'image de déborder et être recadrée */
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.flyer-card:hover {
+    transform: scale(1.05);
+}
+
+.flyer-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;       /* l'image est entièrement visible sans tronquer */
+    object-position: center;
+    display: block;
+}
+
+/* Bouton Panier en haut à droite */
+#header-cart {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#header-cart:hover {
+  background-color: #e6e6e6;
+}
+
+#header-cart svg {
+  width: 100%;
+  height: 100%;
+  color: #333;
+}
