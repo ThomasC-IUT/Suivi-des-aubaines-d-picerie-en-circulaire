@@ -398,6 +398,16 @@
                 </select>
             </div>
             <div class="filter-group">
+                <label for="filter-sort">Trier par</label>
+                <select id="filter-sort">
+                    <option value="">Défaut (Récents)</option>
+                    <option value="price-asc">Prix (Croissant)</option>
+                    <option value="price-desc">Prix (Décroissant)</option>
+                    <option value="unit-price-asc">Prix par quantité (Croissant)</option>
+                    <option value="unit-price-desc">Prix par quantité (Décroissant)</option>
+                </select>
+            </div>
+            <div class="filter-group">
                 <label for="filter-search">Recherche</label>
                 <input type="text" id="filter-search" placeholder="Rechercher un article ou une marque...">
             </div>
@@ -530,6 +540,75 @@
             nextButton.style.cursor = nextButton.disabled ? 'not-allowed' : 'pointer';
         }
 
+        // Calculate numeric unit price for sorting
+        function getSortableUnitPrice(item) {
+            if (!item.unit_price || !item.quantity || !item.unit) {
+                return null;
+            }
+
+            const quantity = parseFloat(item.quantity);
+            const unitPrice = parseFloat(item.unit_price);
+            const unit = item.unit.toLowerCase();
+            
+            if (quantity === 0) return null;
+
+            // 1) Cas "un" : prix par unité
+            if (unit === 'un') {
+                return unitPrice / quantity;
+            }
+
+            // 2) Solides : normaliser en $/100g
+            if (unit === 'g') {
+                return (unitPrice / quantity) * 100;
+            }
+            if (unit === 'kg') {
+                return (unitPrice / quantity) / 10;
+            }
+
+            // 3) Liquides : normaliser en $/100ml
+            if (unit === 'ml') {
+                return (unitPrice / quantity) * 100;
+            }
+            if (unit === 'l') {
+                return (unitPrice / quantity) / 10;
+            }
+
+            // 4) Autres unités
+            return unitPrice / quantity;
+        }
+
+        // Sort items based on selection
+        function sortItems(items) {
+            const sortValue = document.getElementById('filter-sort').value;
+            if (!sortValue) return items;
+
+            return items.sort((a, b) => {
+                if (sortValue === 'price-asc') {
+                    return (a.unit_price || 0) - (b.unit_price || 0);
+                }
+                if (sortValue === 'price-desc') {
+                    return (b.unit_price || 0) - (a.unit_price || 0);
+                }
+                if (sortValue === 'unit-price-asc') {
+                    const valA = getSortableUnitPrice(a);
+                    const valB = getSortableUnitPrice(b);
+                    if (valA === null && valB === null) return 0;
+                    if (valA === null) return 1;
+                    if (valB === null) return -1;
+                    return valA - valB;
+                }
+                if (sortValue === 'unit-price-desc') {
+                    const valA = getSortableUnitPrice(a);
+                    const valB = getSortableUnitPrice(b);
+                    if (valA === null && valB === null) return 0;
+                    if (valA === null) return 1;
+                    if (valB === null) return -1;
+                    return valB - valA;
+                }
+                return 0;
+            });
+        }
+
         // Display items for selected week
         function displayWeekItems(weekKey) {
             currentWeek = weekKey;
@@ -546,7 +625,7 @@
             const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
             const searchFilter = document.getElementById('filter-search').value.toLowerCase();
             
-            filteredItems = weekItems.filter(item => {
+            let filtered = weekItems.filter(item => {
                 const matchStore = !storeFilter || (item.store_name && item.store_name.toLowerCase() === storeFilter);
                 const matchCategory = !categoryFilter || (item.categorie && item.categorie.toLowerCase() === categoryFilter);
                 
@@ -557,6 +636,9 @@
                 
                 return matchStore && matchCategory && matchSearch;
             });
+            
+            // Apply sorting
+            filteredItems = sortItems(filtered);
             
             displayItems(filteredItems);
             updateWeekSelector();
@@ -622,7 +704,7 @@
             });
         }
 
-                // Calculate unit price for display (standardisé : 100g / 100ml / unité)
+        // Calculate unit price for display (standardisé : 100g / 100ml / unité)
         function calculateUnitPrice(item) {
             if (!item.unit_price || !item.quantity || !item.unit) {
                 return '';
@@ -722,7 +804,7 @@
                 const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
                 const searchFilter = document.getElementById('filter-search').value.toLowerCase();
 
-                filteredItems = allItems.filter(item => {
+                let filtered = allItems.filter(item => {
                     const matchStore = !storeFilter || (item.store_name && item.store_name.toLowerCase() === storeFilter);
                     const matchCategory = !categoryFilter || (item.categorie && item.categorie.toLowerCase() === categoryFilter);
                     
@@ -734,6 +816,9 @@
                     return matchStore && matchCategory && matchSearch;
                 });
 
+                // Apply sort
+                filteredItems = sortItems(filtered);
+
                 displayItems(filteredItems);
             }
         }
@@ -741,6 +826,7 @@
         // Event listeners for filters
         document.getElementById('filter-store').addEventListener('change', filterItems);
         document.getElementById('filter-category').addEventListener('change', filterItems);
+        document.getElementById('filter-sort').addEventListener('change', filterItems);
         document.getElementById('filter-search').addEventListener('input', filterItems);
         
         // Event listeners for week navigation
