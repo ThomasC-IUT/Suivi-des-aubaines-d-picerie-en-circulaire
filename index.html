@@ -622,7 +622,7 @@
             });
         }
 
-        // Calculate unit price for display (price per 100g, per L, or per unit)
+                // Calculate unit price for display (standardisé : 100g / 100ml / unité)
         function calculateUnitPrice(item) {
             if (!item.unit_price || !item.quantity || !item.unit) {
                 return '';
@@ -632,36 +632,39 @@
             const unitPrice = parseFloat(item.unit_price);
             const unit = item.unit.toLowerCase();
 
-            // If unit is "un" (unité), show price per unit
+            // 1) Cas "un" : prix par unité = prix du paquet / nombre d'unités
             if (unit === 'un') {
-                return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${unitPrice.toFixed(2)} $/unité)</span>`;
+                const pricePerUnit = unitPrice / quantity;
+                return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${pricePerUnit.toFixed(2)} $/unité)</span>`;
             }
 
-            // For grams, calculate price per 100g
+            // 2) Solides : normaliser en $/100g
+            // Si déjà en grammes
             if (unit === 'g') {
                 const pricePer100g = (unitPrice / quantity) * 100;
                 return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${pricePer100g.toFixed(2)} $/100g)</span>`;
             }
 
-            // For kg, calculate price per kg
+            // Si en kilogrammes : prix/kg ÷ 10 = prix/100g
             if (unit === 'kg') {
-                const pricePerKg = unitPrice / quantity;
-                return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${pricePerKg.toFixed(2)} $/kg)</span>`;
+                const pricePer100g = (unitPrice / quantity) / 10;
+                return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${pricePer100g.toFixed(2)} $/100g)</span>`;
             }
 
-            // For ml, calculate price per L
+            // 3) Liquides : normaliser en $/100ml
+            // Si déjà en ml
             if (unit === 'ml') {
-                const pricePerL = (unitPrice / quantity) * 1000;
-                return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${pricePerL.toFixed(2)} $/L)</span>`;
+                const pricePer100ml = (unitPrice / quantity) * 100;
+                return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${pricePer100ml.toFixed(2)} $/100ml)</span>`;
             }
 
-            // For L, calculate price per L
+            // Si en litres : prix/L ÷ 10 = prix/100ml
             if (unit === 'l') {
-                const pricePerL = unitPrice / quantity;
-                return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${pricePerL.toFixed(2)} $/L)</span>`;
+                const pricePer100ml = (unitPrice / quantity) / 10;
+                return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${pricePer100ml.toFixed(2)} $/100ml)</span>`;
             }
 
-            // For other units, show price per unit
+            // 4) Autres unités : fallback prix par unité de mesure
             return `<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">(${(unitPrice / quantity).toFixed(2)} $/${unit})</span>`;
         }
 
