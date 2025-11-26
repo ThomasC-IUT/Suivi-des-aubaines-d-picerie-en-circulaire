@@ -1,0 +1,21 @@
+.site-logo {
+    max-width: 150px;  /* ou 100px, si tu veux plus petit */
+    max-height: 80px;  /* reste raisonnable si l'image originale est très haute */
+    width: auto;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    object-fit: contain;
+}
+
+/* Styles du menu (inchangés) */
+nav ul {
+    list-style-type: none;
+    padding: 0;
+    text-align: center;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 15px;
+}
