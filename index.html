@@ -74,43 +74,138 @@
             color: var(--color-text);
             line-height: 1.5;
             display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            flex-direction: row; /* Changed to row for sidebar layout */
+            height: 100vh; /* Fixed height for scrolling areas */
+            overflow: hidden;
         }
 
-        /* Header */
+        /* Content Wrapper (Main + Footer) */
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        /* Header (Sidebar) */
         header {
             background-color: var(--color-surface);
-            border-bottom: 1px solid var(--color-border);
-            padding: var(--space-16) var(--space-24);
+            border-right: 1px solid var(--color-border); /* Changed from border-bottom */
+            border-bottom: none;
+            padding: var(--space-24);
             box-shadow: var(--shadow-sm);
-            position: sticky; top: 0; z-index: 100;
+            width: 300px; /* Fixed width sidebar */
+            height: 100vh;
+            flex-shrink: 0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
         }
-        .header-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-        .logo h1 { font-size: var(--font-size-2xl); color: var(--color-primary); font-weight: 600; }
-        .logo p { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
-        nav ul { list-style: none; display: flex; gap: var(--space-24); align-items: center; }
-        nav a { color: var(--color-text); text-decoration: none; font-size: var(--font-size-base); transition: color 0.2s; }
-        nav a:hover { color: var(--color-primary); }
-        .cart-btn { display:flex; align-items:center; gap:8px; background:var(--color-primary); color:#fff; border:none; padding:8px 16px; border-radius:999px; cursor:pointer; font-weight:600; font-size: var(--font-size-base); }
+        
+        .header-container { 
+            /* Removed max-width, adapted for column */
+            display: flex; 
+            flex-direction: column; 
+            gap: var(--space-24);
+            align-items: flex-start; 
+            width: 100%;
+        }
+        
+        .logo { margin-bottom: var(--space-16); }
+        .logo h1 { font-size: var(--font-size-2xl); color: var(--color-primary); font-weight: 600; line-height: 1.2; }
+        .logo p { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-top: 4px; }
+        
+        nav { width: 100%; }
+        nav ul { 
+            list-style: none; 
+            display: flex; 
+            flex-direction: column; /* Vertical links */
+            gap: var(--space-12); 
+            width: 100%;
+        }
+        nav a { 
+            color: var(--color-text); 
+            text-decoration: none; 
+            font-size: var(--font-size-lg); 
+            transition: color 0.2s; 
+            display: block;
+            padding: 8px 0;
+        }
+        nav a:hover { color: var(--color-primary); transform: translateX(4px); }
+        
+        .cart-btn { 
+            display:flex; 
+            align-items:center; 
+            justify-content: space-between;
+            gap:8px; 
+            background:var(--color-primary); 
+            color:#fff; 
+            border:none; 
+            padding:10px 16px; 
+            border-radius:var(--radius-base); 
+            cursor:pointer; 
+            font-weight:600; 
+            font-size: var(--font-size-base); 
+            width: 100%; /* Full width button */
+        }
         .cart-btn:hover{ background: var(--color-primary-hover); }
 
+        /* Sidebar Filter Section */
+        .sidebar-filter {
+            margin-top: var(--space-24);
+            padding-top: var(--space-24);
+            border-top: 1px solid var(--color-border);
+            width: 100%;
+        }
+        .sidebar-filter h3 {
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            margin-bottom: var(--space-12);
+            color: var(--color-text);
+        }
+
         /* Main */
-        main { max-width: 1200px; margin: 0 auto; padding: var(--space-24); flex: 1; }
-        .filters { background: var(--color-surface); padding: var(--space-16); border-radius: var(--radius-lg); border: 1px solid var(--color-card-border); margin-bottom: var(--space-24); display:flex; gap: var(--space-16); flex-wrap: wrap; align-items: start; }
-        .filter-group { flex:1; min-width: 200px; }
+        main { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: var(--space-24); 
+            width: 100%;
+            flex: 1; 
+        }
+        
+        /* Modified filters container since store is gone */
+        .filters { 
+            background: var(--color-surface); 
+            padding: var(--space-16); 
+            border-radius: var(--radius-lg); 
+            border: 1px solid var(--color-card-border); 
+            margin-bottom: var(--space-24); 
+            display:flex; 
+            gap: var(--space-16); 
+            flex-wrap: wrap; 
+            align-items: end; 
+        }
+        .filter-group { flex:1; min-width: 180px; }
         .filter-group label { display:block; margin-bottom: var(--space-8); font-weight: 500; font-size: var(--font-size-sm); }
         .filter-group select, .filter-group input[type="text"] { width:100%; padding: var(--space-8) var(--space-12); border:1px solid var(--color-border); border-radius: var(--radius-base); background: var(--color-background); color: var(--color-text); font-size: var(--font-size-base); }
         .items-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: var(--space-20); }
 
-        /* Store checkbox UI */
-        .store-selector{ border:1px solid var(--color-border); border-radius: var(--radius-base); background: var(--color-background); overflow: hidden; }
-        .store-controls{ padding: var(--space-8); border-bottom:1px solid var(--color-border); background: rgba(0,0,0,0.03); display:flex; gap: var(--space-8); justify-content: space-between; }
-        .store-control-btn{ font-size: var(--font-size-sm); background:none; border:none; color: var(--color-primary); cursor:pointer; padding:2px 6px; border-radius:4px; }
-        .store-control-btn:hover{ background: rgba(0,0,0,0.05); }
-        .store-list{ max-height:150px; overflow-y:auto; padding: var(--space-8); }
-        .store-checkbox-label{ display:flex; align-items:center; gap: var(--space-8); padding:4px 0; cursor:pointer; font-size: var(--font-size-base); user-select:none; }
-        .store-checkbox-label input{ accent-color: var(--color-primary); width:16px; height:16px; }
+        /* Nav Subsection - Store list nested under Accueil */
+        .nav-subsection {
+            margin-top: var(--space-8);
+            margin-left: var(--space-12);
+            padding-left: var(--space-12);
+            border-left: 2px solid var(--color-border);
+        }
+        .nav-subsection .store-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: var(--space-8) 0;
+        }
+        .store-checkbox-label{ display:flex; align-items:center; gap: var(--space-8); padding:4px 0; cursor:pointer; font-size: var(--font-size-sm); user-select:none; }
+        .store-checkbox-label input{ accent-color: var(--color-primary); width:14px; height:14px; }
 
         /* Cards */
         .item-card { background: var(--color-surface); border:1px solid var(--color-card-border); border-radius: var(--radius-lg); padding: var(--space-16); box-shadow: var(--shadow-sm); transition: transform 0.2s, box-shadow 0.2s; position: relative; }
@@ -174,18 +269,32 @@
         .cart-total{ font-size: var(--font-size-xl); font-weight:700; color: var(--color-text); }
         .cart-savings{ color:#10b981; font-weight:500; }
 
-        @media (max-width:768px){
-            .header-container{ flex-direction:column; gap: var(--space-16); text-align:center; }
-            nav ul{ flex-direction:column; gap: var(--space-12); }
+        /* Footer */
+        footer {
+            padding: var(--space-24);
+            border-top: 1px solid var(--color-border);
+            background: var(--color-background);
+        }
+
+        @media (max-width: 850px){
+            body { flex-direction: column; overflow: auto; height: auto; }
+            .content-wrapper { height: auto; overflow: visible; }
+            header { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--color-border); position: relative; }
+            .header-container { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+            nav { width: auto; }
+            nav ul { flex-direction: row; }
+            .sidebar-filter { width: 100%; margin-top: var(--space-12); padding-top: var(--space-12); }
+            .logo { margin-bottom: 0; }
+            
             .filters{ flex-direction:column; }
             .items-grid{ grid-template-columns: 1fr; }
             .footer-container{ flex-direction:column; text-align:center; }
             .footer-links ul{ flex-direction:column; gap: var(--space-8); }
-            .chart-container{ height:300px; }
         }
     </style>
 </head>
 <body>
+    <!-- Vertical Sidebar -->
     <header>
         <div class="header-container">
             <div class="logo">
@@ -194,7 +303,13 @@
             </div>
             <nav>
                 <ul>
-                    <li><a href="#accueil">Accueil</a></li>
+                    <li>
+                        <a href="#accueil">Accueil</a>
+                        <!-- Store Selector nested under Accueil -->
+                        <div class="nav-subsection">
+                            <div id="store-list-container" class="store-list"></div>
+                        </div>
+                    </li>
                     <li><a href="#aubaines">Aubaines</a></li>
                     <li><a href="#magasins">Magasins</a></li>
                     <li>
@@ -208,77 +323,72 @@
         </div>
     </header>
 
-    <main>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-24); flex-wrap:wrap; gap: var(--space-16);">
-            <h2 id="week-title" style="margin:0; font-size: var(--font-size-3xl);">Aubaines en vedette</h2>
-            <div style="display:flex; gap: var(--space-12); align-items:center;">
-                <button id="prev-week" style="padding:8px 16px; border:1px solid var(--color-border); border-radius: var(--radius-base); background: var(--color-surface); color: var(--color-text); cursor:pointer;">← Semaine précédente</button>
-                <select id="week-selector" style="padding:8px 12px; border:1px solid var(--color-border); border-radius: var(--radius-base); background: var(--color-surface); color: var(--color-text); min-width:200px;">
-                    <option value="">Chargement...</option>
-                </select>
-                <button id="next-week" style="padding:8px 16px; border:1px solid var(--color-border); border-radius: var(--radius-base); background: var(--color-surface); color: var(--color-text); cursor:pointer;">Semaine suivante →</button>
-            </div>
-        </div>
-
-        <div class="filters">
-            <div class="filter-group">
-                <label>Magasins</label>
-                <div class="store-selector">
-                    <div class="store-controls">
-                        <button type="button" id="btn-select-all-stores" class="store-control-btn">Tout cocher</button>
-                        <button type="button" id="btn-deselect-all-stores" class="store-control-btn">Tout décocher</button>
-                    </div>
-                    <div id="store-list-container" class="store-list"></div>
+    <!-- Content Wrapper (Main + Footer) -->
+    <div class="content-wrapper">
+        <main>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-24); flex-wrap:wrap; gap: var(--space-16);">
+                <h2 id="week-title" style="margin:0; font-size: var(--font-size-3xl);">Aubaines en vedette</h2>
+                <div style="display:flex; gap: var(--space-12); align-items:center;">
+                    <button id="prev-week" style="padding:8px 16px; border:1px solid var(--color-border); border-radius: var(--radius-base); background: var(--color-surface); color: var(--color-text); cursor:pointer;">← Semaine précédente</button>
+                    <select id="week-selector" style="padding:8px 12px; border:1px solid var(--color-border); border-radius: var(--radius-base); background: var(--color-surface); color: var(--color-text); min-width:200px;">
+                        <option value="">Chargement...</option>
+                    </select>
+                    <button id="next-week" style="padding:8px 16px; border:1px solid var(--color-border); border-radius: var(--radius-base); background: var(--color-surface); color: var(--color-text); cursor:pointer;">Semaine suivante →</button>
                 </div>
             </div>
-            <div class="filter-group">
-                <label for="filter-category">Catégorie</label>
-                <select id="filter-category">
-                    <option value="">Toutes les catégories</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="filter-sort">Trier par</label>
-                <select id="filter-sort">
-                    <option value="">Défaut (Récents)</option>
-                    <option value="price-asc">Prix (Croissant)</option>
-                    <option value="price-desc">Prix (Décroissant)</option>
-                    <option value="unit-price-asc">Prix par quantité (Croissant)</option>
-                    <option value="unit-price-desc">Prix par quantité (Décroissant)</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="filter-search">Recherche</label>
-                <input type="text" id="filter-search" placeholder="Rechercher un article ou une marque...">
-            </div>
-            <div class="filter-group" style="display:flex; align-items:center; gap:10px; min-width:180px;">
-                <label for="compact-mode" style="margin:0;">Mode compact</label>
-                <input type="checkbox" id="compact-mode" style="width:18px; height:18px;">
-            </div>
-        </div>
 
-        <div id="error-message"></div>
-        <div id="loading" class="loading">Chargement des aubaines...</div>
-        <div id="items-container" class="items-grid"></div>
-    </main>
+            <div class="filters">
+                <!-- REMOVED STORE SELECTOR FROM HERE -->
+                
+                <div class="filter-group">
+                    <label for="filter-category">Catégorie</label>
+                    <select id="filter-category">
+                        <option value="">Toutes les catégories</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-sort">Trier par</label>
+                    <select id="filter-sort">
+                        <option value="">Défaut (Récents)</option>
+                        <option value="price-asc">Prix (Croissant)</option>
+                        <option value="price-desc">Prix (Décroissant)</option>
+                        <option value="unit-price-asc">Prix par quantité (Croissant)</option>
+                        <option value="unit-price-desc">Prix par quantité (Décroissant)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-search">Recherche</label>
+                    <input type="text" id="filter-search" placeholder="Rechercher un article ou une marque...">
+                </div>
+                <div class="filter-group" style="display:flex; align-items:center; gap:10px; min-width:180px;">
+                    <label for="compact-mode" style="margin:0;">Mode compact</label>
+                    <input type="checkbox" id="compact-mode" style="width:18px; height:18px;">
+                </div>
+            </div>
 
-    <footer>
-        <div class="footer-container" style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap: var(--space-16);">
-            <div class="footer-info" style="flex:1;">
-                <h3 style="font-size: var(--font-size-lg); color: var(--color-primary);">Aubaines Épicerie</h3>
-                <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">Votre source pour les meilleures aubaines d'épicerie au Québec</p>
-                <p style="margin-top: var(--space-8); font-size: var(--font-size-sm); color: var(--color-text-secondary);">&copy; 2025 Aubaines Épicerie. Tous droits réservés.</p>
+            <div id="error-message"></div>
+            <div id="loading" class="loading">Chargement des aubaines...</div>
+            <div id="items-container" class="items-grid"></div>
+        </main>
+
+        <footer>
+            <div class="footer-container" style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap: var(--space-16);">
+                <div class="footer-info" style="flex:1;">
+                    <h3 style="font-size: var(--font-size-lg); color: var(--color-primary);">Aubaines Épicerie</h3>
+                    <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">Votre source pour les meilleures aubaines d'épicerie au Québec</p>
+                    <p style="margin-top: var(--space-8); font-size: var(--font-size-sm); color: var(--color-text-secondary);">&copy; 2025 Aubaines Épicerie. Tous droits réservés.</p>
+                </div>
+                <div class="footer-links">
+                    <ul style="list-style:none; display:flex; gap: var(--space-16);">
+                        <li><a href="#a-propos">À propos</a></li>
+                        <li><a href="#confidentialite">Confidentialité</a></li>
+                        <li><a href="#conditions">Conditions</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
             </div>
-            <div class="footer-links">
-                <ul style="list-style:none; display:flex; gap: var(--space-16);">
-                    <li><a href="#a-propos">À propos</a></li>
-                    <li><a href="#confidentialite">Confidentialité</a></li>
-                    <li><a href="#conditions">Conditions</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </div>
-        </div>
-    </footer>
+        </footer>
+    </div>
 
     <!-- History Modal -->
     <div id="history-modal" class="modal-overlay">
@@ -351,8 +461,7 @@
 
         // Populate filters
         function populateFilters(){ const stores=[...new Set(allItems.map(i=>i.store_name))].filter(Boolean).sort(); const cats=[...new Set(allItems.map(i=>i.categorie))].filter(Boolean).sort(); const storeContainer=document.getElementById('store-list-container'); storeContainer.innerHTML=''; stores.forEach(store=>{ const label=document.createElement('label'); label.className='store-checkbox-label'; const input=document.createElement('input'); input.type='checkbox'; input.name='store-select'; input.value=store; input.checked=true; input.addEventListener('change', filterItems); label.appendChild(input); label.appendChild(document.createTextNode(store)); storeContainer.appendChild(label); }); const catSel=document.getElementById('filter-category'); while(catSel.options.length>1) catSel.remove(1); cats.forEach(c=>{ const opt=document.createElement('option'); opt.value=c; opt.textContent=c; catSel.appendChild(opt); }); }
-        document.getElementById('btn-select-all-stores').addEventListener('click',()=>{ document.querySelectorAll('input[name="store-select"]').forEach(cb=>cb.checked=true); filterItems(); });
-        document.getElementById('btn-deselect-all-stores').addEventListener('click',()=>{ document.querySelectorAll('input[name="store-select"]').forEach(cb=>cb.checked=false); filterItems(); });
+
 
         // Unit price label
         function calculateUnitPrice(item){ if(!item.unit_price||!item.quantity||!item.unit) return ''; const q=parseFloat(item.quantity), p=parseFloat(item.unit_price), u=item.unit.toLowerCase(); if(u==='un'){ const v=p/q; return `<span style="font-size:12px;color:var(--color-text-secondary);">(${v.toFixed(2)} $/unité)</span>`;} if(u==='g'){ const v=(p/q)*100; return `<span style="font-size:12px;color:var(--color-text-secondary);">(${v.toFixed(2)} $/100g)</span>`;} if(u==='kg'){ const v=(p/q)/10; return `<span style="font-size:12px;color:var(--color-text-secondary);">(${v.toFixed(2)} $/100g)</span>`;} if(u==='ml'){ const v=(p/q)*100; return `<span style="font-size:12px;color:var(--color-text-secondary);">(${v.toFixed(2)} $/100ml)</span>`;} if(u==='l'){ const v=(p/q)/10; return `<span style="font-size:12px;color:var(--color-text-secondary);">(${v.toFixed(2)} $/100ml)</span>`;} const v=p/q; return `<span style="font-size:12px;color:var(--color-text-secondary);">(${v.toFixed(2)} $/${u})</span>`; }
