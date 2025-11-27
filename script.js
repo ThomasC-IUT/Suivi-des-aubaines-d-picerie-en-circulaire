@@ -8,9 +8,9 @@
 
 const SUPABASE_URL = 'https://uusnmuuysekydjtkkjjb.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1c25tdXV5c2VreWRqdGtrampiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0Mjc3MDksImV4cCI6MjA3OTAwMzcwOX0.6rRP22MpPe4QYL-Ibx-k764aS1AyT3X2OwSrytKU5sY';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false }
-});
+}) : null;
 
 // ============================================================================
 // ÉTAT GLOBAL DE L'APPLICATION
@@ -121,7 +121,10 @@ function getSortableUnitPrice(item) {
  * @returns {Array} Items triés
  */
 function sortItems(items) {
-    const v = document.getElementById('filter-sort').value;
+    const filterSort = document.getElementById('filter-sort');
+    if (!filterSort) return items;
+    
+    const v = filterSort.value;
     if (!v) return items;
     
     return items.sort((a, b) => {
@@ -319,7 +322,9 @@ function addToCart(item) {
 function removeFromCart(index) {
     shoppingCart.splice(index, 1);
     saveCart();
-    updateCartDisplay();
+    if (typeof updateCartDisplay === 'function') {
+        updateCartDisplay();
+    }
     updateCartCount();
 }
 
@@ -331,6 +336,16 @@ function saveCart() {
     localStorage.setItem('grocery_budget', userBudget);
 }
 
+/**
+ * Met à jour le compteur du panier
+ */
+function updateCartCount() {
+    const cartCount = document.getElementById('cart-count');
+    if (cartCount) {
+        cartCount.textContent = shoppingCart.length;
+    }
+}
+
 // ============================================================================
 // CHARGEMENT DES DONNÉES
 // ============================================================================
@@ -339,6 +354,11 @@ function saveCart() {
  * Récupère les items depuis Supabase
  */
 async function fetchItems() {
+    if (!supabase) {
+        console.warn('⚠️ Supabase non disponible');
+        return;
+    }
+    
     try {
         const { data, error } = await supabase
             .from('itemCirculaire')
@@ -353,22 +373,28 @@ async function fetchItems() {
         buildAnalytics();
         currentWeek = getMostRecentWeek(weekGroups);
         
-        populateFilters();
+        // Vérifier que les éléments DOM existent avant de continuer
+        if (typeof populateFilters === 'function') {
+            populateFilters();
+        }
         
-        if (currentWeek) {
+        if (currentWeek && typeof displayWeekItems === 'function') {
             displayWeekItems(currentWeek);
-        } else {
+        } else if (typeof renderList === 'function') {
             // Afficher tous les items si pas de semaine
-            const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
-            const searchFilter = document.getElementById('filter-search').value.toLowerCase();
+            const categoryFilter = document.getElementById('filter-category');
+            const searchFilter = document.getElementById('filter-search');
+            
+            const categoryValue = categoryFilter ? categoryFilter.value.toLowerCase() : '';
+            const searchValue = searchFilter ? searchFilter.value.toLowerCase() : '';
             const checkedStores = Array.from(document.querySelectorAll('input[name="store-select"]:checked')).map(cb => cb.value);
             
             let filtered = data.filter(item => {
                 const matchStore = !item.store_name || checkedStores.includes(item.store_name);
-                const matchCategory = !categoryFilter || (item.categorie && item.categorie.toLowerCase() === categoryFilter);
-                const matchSearch = !searchFilter || 
-                    (item.item && item.item.toLowerCase().includes(searchFilter)) || 
-                    (item.brand && item.brand.toLowerCase().includes(searchFilter));
+                const matchCategory = !categoryValue || (item.categorie && item.categorie.toLowerCase() === categoryValue);
+                const matchSearch = !searchValue || 
+                    (item.item && item.item.toLowerCase().includes(searchValue)) || 
+                    (item.brand && item.brand.toLowerCase().includes(searchValue));
                 return matchStore && matchCategory && matchSearch;
             });
             
@@ -376,12 +402,18 @@ async function fetchItems() {
             renderList(filteredItems, data);
         }
         
-        document.getElementById('loading').style.display = 'none';
+        const loadingEl = document.getElementById('loading');
+        if (loadingEl) loadingEl.style.display = 'none';
+        
     } catch (err) {
         console.error('Erreur lors du chargement:', err);
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('error-message').innerHTML = 
-            `<div class="error">Erreur lors du chargement des données: ${err.message}</div>`;
+        const loadingEl = document.getElementById('loading');
+        if (loadingEl) loadingEl.style.display = 'none';
+        
+        const errorEl = document.getElementById('error-message');
+        if (errorEl) {
+            errorEl.innerHTML = `<div class="error">Erreur lors du chargement des données: ${err.message}</div>`;
+        }
     }
 }
 
@@ -396,28 +428,44 @@ async function fetchItems() {
 function displayWeekItems(weekKey) {
     currentWeek = weekKey;
     const { week } = parseWeekKey(weekKey);
-    document.getElementById('week-title').textContent = `Aubaines de la semaine ${week}`;
+    
+    const weekTitle = document.getElementById('week-title');
+    if (weekTitle) {
+        weekTitle.textContent = `Aubaines de la semaine ${week}`;
+    }
     
     const weekItems = weekGroups[weekKey] || [];
     
     // Appliquer les filtres
-    const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
-    const searchFilter = document.getElementById('filter-search').value.toLowerCase();
+    const categoryFilter = document.getElementById('filter-category');
+    const searchFilter = document.getElementById('filter-search');
+    
+    const categoryValue = categoryFilter ? categoryFilter.value.toLowerCase() : '';
+    const searchValue = searchFilter ? searchFilter.value.toLowerCase() : '';
     const checkedStores = Array.from(document.querySelectorAll('input[name="store-select"]:checked')).map(cb => cb.value);
     
     let filtered = weekItems.filter(item => {
         const matchStore = !item.store_name || checkedStores.includes(item.store_name);
-        const matchCategory = !categoryFilter || (item.categorie && item.categorie.toLowerCase() === categoryFilter);
-        const matchSearch = !searchFilter || 
-            (item.item && item.item.toLowerCase().includes(searchFilter)) || 
-            (item.brand && item.brand.toLowerCase().includes(searchFilter));
+        const matchCategory = !categoryValue || (item.categorie && item.categorie.toLowerCase() === categoryValue);
+        const matchSearch = !searchValue || 
+            (item.item && item.item.toLowerCase().includes(searchValue)) || 
+            (item.brand && item.brand.toLowerCase().includes(searchValue));
         return matchStore && matchCategory && matchSearch;
     });
     
     filteredItems = sortItems(filtered);
-    renderList(filteredItems, weekItems);
-    updateWeekSelector();
-    updateNavigationButtons();
+    
+    if (typeof renderList === 'function') {
+        renderList(filteredItems, weekItems);
+    }
+    
+    if (typeof updateWeekSelector === 'function') {
+        updateWeekSelector();
+    }
+    
+    if (typeof updateNavigationButtons === 'function') {
+        updateNavigationButtons();
+    }
 }
 
 /**
@@ -427,21 +475,27 @@ function filterItems() {
     if (currentWeek) {
         displayWeekItems(currentWeek);
     } else {
-        const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
-        const searchFilter = document.getElementById('filter-search').value.toLowerCase();
+        const categoryFilter = document.getElementById('filter-category');
+        const searchFilter = document.getElementById('filter-search');
+        
+        const categoryValue = categoryFilter ? categoryFilter.value.toLowerCase() : '';
+        const searchValue = searchFilter ? searchFilter.value.toLowerCase() : '';
         const checkedStores = Array.from(document.querySelectorAll('input[name="store-select"]:checked')).map(cb => cb.value);
         
         let filtered = allItems.filter(item => {
             const matchStore = !item.store_name || checkedStores.includes(item.store_name);
-            const matchCategory = !categoryFilter || (item.categorie && item.categorie.toLowerCase() === categoryFilter);
-            const matchSearch = !searchFilter || 
-                (item.item && item.item.toLowerCase().includes(searchFilter)) || 
-                (item.brand && item.brand.toLowerCase().includes(searchFilter));
+            const matchCategory = !categoryValue || (item.categorie && item.categorie.toLowerCase() === categoryValue);
+            const matchSearch = !searchValue || 
+                (item.item && item.item.toLowerCase().includes(searchValue)) || 
+                (item.brand && item.brand.toLowerCase().includes(searchValue));
             return matchStore && matchCategory && matchSearch;
         });
         
         filteredItems = sortItems(filtered);
-        renderList(filteredItems, allItems);
+        
+        if (typeof renderList === 'function') {
+            renderList(filteredItems, allItems);
+        }
     }
 }
 
@@ -451,9 +505,9 @@ function filterItems() {
 
 // Attendre que TOUT le HTML soit chargé
 window.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ DOM chargé, initialisation...');
+    console.log('✅ DOM chargé, initialisation script.js...');
     
-    // Event listeners des filtres
+    // Event listeners des filtres (avec vérifications)
     const filterCategory = document.getElementById('filter-category');
     const filterSort = document.getElementById('filter-sort');
     const filterSearch = document.getElementById('filter-search');
@@ -487,9 +541,13 @@ window.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Initialiser le panier et charger les données
+    // Initialiser le panier
     updateCartCount();
-    fetchItems();
     
-    console.log('✅ Initialisation terminée');
+    // Charger les données seulement si on est sur index.html
+    if (document.getElementById('items-container')) {
+        fetchItems();
+    }
+    
+    console.log('✅ Initialisation script.js terminée');
 });

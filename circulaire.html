@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Circulaire</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Bandeau Haut -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <h1>🛒 Aubaines Épicerie</h1>
+                <p>Suivi des circulaires du Québec</p>
+            </div>
+            <nav>
+                <ul>
+                    <li>
+                        <a href="index.html">Accueil</a>
+                    </li>
+                    <li><a href="circulaire_html.html">Circulaire</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Conteneur principal -->
+    <div id="container">
+
+        <!-- Zone centrale -->
+        <main id="content">
+            <div class="flyer-card" onclick="openFlyer('maxi')">
+                <img src="https://www.circulaires.com/images/maxi-cie.gif" alt="Maxi">
+            </div>
+
+            <div class="flyer-card" onclick="openFlyer('iga')">
+                <img src="https://www.circulaires.com/images/iga.gif" alt="IGA">
+            </div>
+
+            <div class="flyer-card" onclick="openFlyer('walmart')">
+                <img src="https://www.circulaires.com/images/walmart.gif" alt="Walmart">
+            </div>
+        </main>
+
+        <footer>
+            <div class="footer-container" style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap: var(--space-16);">
+                <div class="footer-info" style="flex:1;">
+                    <h3 style="font-size: var(--font-size-lg); color: var(--color-primary);">Aubaines Épicerie</h3>
+                    <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">Votre source pour les meilleures aubaines d'épicerie au Québec</p>
+                    <p style="margin-top: var(--space-8); font-size: var(--font-size-sm); color: var(--color-text-secondary);">&copy; 2025 Aubaines Épicerie. Tous droits réservés.</p>
+                </div>
+                <div class="footer-links">
+                    <ul style="list-style:none; display:flex; gap: var(--space-16);">
+                        <li><a href="#PlanDuSite">Plan du Site</a></li>
+                        <li><a href="#conditions">Conditions</a></li>
+                    </ul>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+
+
+    <script src="circulaire.js"></script>
+
+</body>
+</html>
