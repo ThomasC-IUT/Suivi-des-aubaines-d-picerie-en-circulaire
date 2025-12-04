@@ -7,7 +7,7 @@ function openFlyer(store) {
         case "iga":
             url = "https://www.iga.net/fr/circulaire";
             break;
-        case "Metro":
+        case "metro":
             url = "https://www.metro.ca/circulaire";
             break;
     }
