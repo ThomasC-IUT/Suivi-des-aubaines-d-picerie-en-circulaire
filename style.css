@@ -137,6 +137,24 @@ body {
     padding: var(--space-24);
     background: var(--color-background);
 }
+/* ============================================================================
+  bouton exportation du panier
+   ============================================================================ */
+.export-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-size: 16px;
+}
+.export-btn:hover {
+    background-color: #0056b3;
+}
+
+
 
 /* ============================================================================
    HEADER / BANDEAU
@@ -917,4 +935,5 @@ footer {
 /* Footer reste en bas */
 footer {
     margin-top: auto;
+
 }
