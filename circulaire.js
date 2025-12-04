@@ -7,8 +7,8 @@ function openFlyer(store) {
         case "iga":
             url = "https://www.iga.net/fr/circulaire";
             break;
-        case "walmart":
-            url = "https://www.walmart.ca/fr/flyer?locale=fr&store_code=1201";
+        case "Metro":
+            url = "https://www.metro.ca/circulaire";
             break;
     }
     window.open(url, "_blank");
