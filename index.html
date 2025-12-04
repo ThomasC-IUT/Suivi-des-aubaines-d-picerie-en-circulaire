@@ -7,10 +7,14 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <!-- ajout du style a la page-->
     <link rel="stylesheet" href="style.css">
 
-
+    <!-- ✅ ajout du CSS panier -->
+    <link rel="stylesheet" href="panier.css">
 
 </head>
 <body>
@@ -57,8 +61,6 @@
             </div>
 
             <div class="filters">
-                <!-- REMOVED STORE SELECTOR FROM HERE -->
-                
                 <div class="filter-group">
                     <label for="filter-category">Catégorie</label>
                     <select id="filter-category">
@@ -149,11 +151,9 @@
         </div>
     </div>
 
-
     <!-- Ajout des scripts à la page -->
     <script src="script.js"></script>
     <script src="layout.js"></script>
 
-    
 </body>
 </html>
