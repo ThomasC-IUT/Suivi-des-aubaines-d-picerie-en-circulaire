@@ -364,15 +364,16 @@ main {
     border-radius: var(--radius-lg); 
     border: 1px solid var(--color-card-border); 
     margin-bottom: var(--space-24); 
+    gap: var(--space-16);
     display: flex; 
-    gap: var(--space-16); 
-    flex-wrap: wrap; 
-    align-items: end; 
+    flex-direction: column;
+    justify-content: left;
 }
 
 .filter-group { 
     flex: 1; 
-    min-width: 180px; 
+    min-width: 180px;
+    max-width: 350px;
 }
 
 .filter-group label { 
@@ -484,8 +485,12 @@ main {
     font-size: var(--font-size-sm); 
 }
 
+.empty::before {
+    content: "\200B";
+}
+
 .detail-label { 
-    color: var(--color-text-secondary); 
+    color: var(--color-text-secondary);
 }
 
 .detail-value { 
@@ -890,10 +895,6 @@ footer {
     #content {
         flex-direction: column;
         gap: var(--space-20);
-    }
-    
-    .filters { 
-        flex-direction: column; 
     }
     
     .items-grid { 

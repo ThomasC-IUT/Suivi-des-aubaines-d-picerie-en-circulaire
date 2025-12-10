@@ -401,8 +401,8 @@ function displayItems(items, currentWeekItems = null) {
                     ${item.categorie ? `<div class="item-category">${item.categorie}</div>` : ''}
                 </div>
                 <div class="item-details">
-                    ${item.brand ? `<div class="detail-row"><span class="detail-label">Marque:</span><span class="detail-value">${item.brand}</span></div>` : ''}
-                    ${item.unit ? `<div class="detail-row"><span class="detail-label">Unité:</span><span class="detail-value">${item.quantity || 1} ${item.unit}</span></div>` : ''}
+                    ${item.brand ? `<div class="detail-row"><span class="detail-label">Marque:</span><span class="detail-value">${item.brand}</span></div>` : '<div class="detail-row empty"></div>'}
+                    ${item.unit ? `<div class="detail-row"><span class="detail-label">Unité:</span><span class="detail-value">${item.quantity || 1} ${item.unit}</span></div>` : '<div class="detail-row empty"></div>'}
                 </div>
                 <div class="item-price">
                     ${item.unit_price ? `
