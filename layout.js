@@ -16,6 +16,7 @@ const storeColors = {
 // Variable globale pour l'instance du graphique Chart.js
 let chartInstance = null;
 
+
 // ============================================================================
 // GESTION DES MODALES
 // ============================================================================
@@ -395,10 +396,10 @@ function displayItems(items, currentWeekItems = null) {
         
         return `
             <div class="item-card">
-                <button class="add-to-list-btn" onclick='addToCart(${itemJson})' title="Ajouter à ma liste">+</button>
                 <div class="item-header">
                     <div class="item-name">${item.item || 'Sans nom'}</div>
                     ${item.categorie ? `<div class="item-category">${item.categorie}</div>` : ''}
+                    <div class="add-item"><button class="add-to-list-btn" onclick='addToCart(${itemJson})' title="Ajouter à ma liste">+</button></div>
                 </div>
                 <div class="item-details">
                     ${item.brand ? `<div class="detail-row"><span class="detail-label">Marque:</span><span class="detail-value">${item.brand}</span></div>` : '<div class="detail-row empty"></div>'}
