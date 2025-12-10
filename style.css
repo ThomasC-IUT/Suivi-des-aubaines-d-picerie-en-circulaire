@@ -944,3 +944,19 @@ footer {
     margin-top: auto;
 
 }
+
+/* ============================================================================
+   EXPORTATION PDF
+   ============================================================================ */
+.pdf-print-mode {
+    background-color: #fff !important; 
+}
+.pdf-print-mode * {
+    color: #000 !important; 
+}
+.pdf-print-mode .cart-summary-row {
+    border-color: #ccc !important; 
+}
+.pdf-print-mode .cart-item {
+    box-shadow: none !important;
+}

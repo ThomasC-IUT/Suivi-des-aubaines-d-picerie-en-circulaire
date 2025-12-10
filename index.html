@@ -10,6 +10,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+
     <!-- ajout du style a la page-->
     <link rel="stylesheet" href="style.css">
 
@@ -102,6 +104,13 @@
                 <div class="cart-summary-row">
                     <span style="font-size: var(--font-size-lg); font-weight:600;">Total estimé :</span>
                     <span id="cart-total" class="cart-total">0.00 $</span>
+                </div>
+                <div class="cart-footer">
+                    <div class="cart-export-row" style="margin-top: 20px; text-align: right;">
+                        <button id="exportPdfBtn" style="padding: 10px 15px; background-color: var(--color-primary); color: white; border: none; border-radius: var(--radius-base); cursor: pointer;">
+                            Exporter en PDF (Liste actuelle) 📥
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
