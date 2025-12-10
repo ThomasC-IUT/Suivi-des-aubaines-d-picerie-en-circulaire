@@ -460,11 +460,16 @@ main {
 }
 
 .item-name { 
-    font-size: var(--font-size-lg); 
+    font-size: var(--font-size-lg);
     font-weight: 600; 
     color: var(--color-text); 
-    padding-right: 24px; 
+    padding-right: 5px; 
     flex-grow: 1;
+    flex-shrink: 1; 
+    min-width: 0;
+    white-space: nowrap;   
+    overflow: hidden; 
+    text-overflow: ellipsis;
 }
 
 .item-category { 
