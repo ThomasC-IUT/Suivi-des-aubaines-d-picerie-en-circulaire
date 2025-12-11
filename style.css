@@ -356,7 +356,7 @@ main {
 }
 
 /* ============================================================================
-   FILTRES
+   FILTRES (MODIFIÉ)
    ============================================================================ */
 .filters { 
     background: var(--color-surface); 
@@ -365,9 +365,13 @@ main {
     border: 1px solid var(--color-card-border); 
     margin-bottom: var(--space-24); 
     gap: var(--space-16);
+    
+    /* Modification: Affichage en ligne (Row) pour Desktop */
     display: flex; 
-    flex-direction: column;
-    justify-content: left;
+    flex-direction: row; 
+    flex-wrap: wrap; /* Permet de passer à la ligne si l'écran rétrécit un peu */
+    align-items: flex-end; /* Aligne les champs en bas pour être esthétique */
+    justify-content: flex-start;
 }
 
 .filter-group { 
@@ -392,7 +396,34 @@ main {
     background: var(--color-background); 
     color: var(--color-text); 
     font-size: var(--font-size-base); 
+    height: 38px; /* Hauteur fixe pour alignement propre */
 }
+
+/* Nouvelle classe pour la case à cocher "Mode Compact" */
+.filter-group-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 180px;
+    /* On utilise la hauteur pour s'aligner avec les inputs (height 38px + label margin) */
+    height: 38px; 
+    margin-bottom: 2px; /* Petit ajustement optique */
+}
+
+.filter-group-checkbox label {
+    margin: 0;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: var(--font-size-sm);
+}
+
+.filter-group-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+}
+
 
 /* ============================================================================
    FLYER CARDS (du Code 1, adapté avec variables du Code 2)
@@ -875,6 +906,18 @@ footer {
     
     nav ul { 
         flex-direction: row; 
+    }
+    
+    /* MODIFICATION : Passage en colonne pour les filtres sur Mobile */
+    .filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group,
+    .filter-group-checkbox {
+        max-width: 100%;
+        width: 100%;
     }
     
     .sidebar-filter { 
