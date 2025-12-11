@@ -117,14 +117,14 @@ body {
     margin-bottom: var(--space-16);
 }
 
-#menu a {
+#menu a,.footer-link {
     text-decoration: none;
     font-size: var(--font-size-xl);
     color: var(--color-text);
     transition: color 0.2s;
 }
 
-#menu a:hover {
+#menu a,.footer-link:hover {
     color: var(--color-primary);
 }
 
@@ -364,15 +364,16 @@ main {
     border-radius: var(--radius-lg); 
     border: 1px solid var(--color-card-border); 
     margin-bottom: var(--space-24); 
+    gap: var(--space-16);
     display: flex; 
-    gap: var(--space-16); 
-    flex-wrap: wrap; 
-    align-items: end; 
+    flex-direction: column;
+    justify-content: left;
 }
 
 .filter-group { 
     flex: 1; 
-    min-width: 180px; 
+    min-width: 180px;
+    max-width: 350px;
 }
 
 .filter-group label { 
@@ -459,10 +460,16 @@ main {
 }
 
 .item-name { 
-    font-size: var(--font-size-lg); 
+    font-size: var(--font-size-lg);
     font-weight: 600; 
     color: var(--color-text); 
-    padding-right: 24px; 
+    padding-right: 5px; 
+    flex-grow: 1;
+    flex-shrink: 1; 
+    min-width: 0;
+    white-space: nowrap;   
+    overflow: hidden; 
+    text-overflow: ellipsis;
 }
 
 .item-category { 
@@ -484,8 +491,12 @@ main {
     font-size: var(--font-size-sm); 
 }
 
+.empty::before {
+    content: "\200B";
+}
+
 .detail-label { 
-    color: var(--color-text-secondary); 
+    color: var(--color-text-secondary);
 }
 
 .detail-value { 
@@ -517,7 +528,7 @@ main {
 }
 
 .add-to-list-btn { 
-    position: absolute; 
+    
     top: var(--space-16); 
     right: var(--space-16); 
     background: var(--color-surface); 
@@ -531,8 +542,8 @@ main {
     cursor: pointer; 
     color: var(--color-text); 
     font-size: 18px; 
-    transition: all 0.2s; 
-    z-index: 2; 
+    transition: all 0.2s;
+    margin: 0px 5px;
 }
 
 .add-to-list-btn:hover { 
@@ -892,10 +903,6 @@ footer {
         gap: var(--space-20);
     }
     
-    .filters { 
-        flex-direction: column; 
-    }
-    
     .items-grid { 
         grid-template-columns: 1fr; 
     }
@@ -936,4 +943,20 @@ footer {
 footer {
     margin-top: auto;
 
+}
+
+/* ============================================================================
+   EXPORTATION PDF
+   ============================================================================ */
+.pdf-print-mode {
+    background-color: #fff !important; 
+}
+.pdf-print-mode * {
+    color: #000 !important; 
+}
+.pdf-print-mode .cart-summary-row {
+    border-color: #ccc !important; 
+}
+.pdf-print-mode .cart-item {
+    box-shadow: none !important;
 }

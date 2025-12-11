@@ -16,6 +16,7 @@ const storeColors = {
 // Variable globale pour l'instance du graphique Chart.js
 let chartInstance = null;
 
+
 // ============================================================================
 // GESTION DES MODALES
 // ============================================================================
@@ -380,14 +381,14 @@ function displayItems(items, currentWeekItems = null) {
                 ? `${insights.pctVsCompetitor < 0 ? '' : '+'}${insights.pctVsCompetitor.toFixed(0)}% vs meilleur concurrent` 
                 : '';
             const last = Number.isFinite(insights.lastTimeWeeks) 
-                ? `Dernière fois à ce prix : il y a ${insights.lastTimeWeeks} semaine${insights.lastTimeWeeks > 1 ? 's' : ''}` 
-                : '';
+                ? `Dernière fois à ce prix : il y a ${insights.lastTimeWeeks} semaine${insights.lastTimeWeeks > 1 ? 's' : '<div class="detail-row empty"></div>'}` 
+                : '<div class="detail-row empty"></div>';
             
             const parts = [vsAvg, vsComp].filter(Boolean).join('  |  ');
             const detail = [parts, last].filter(Boolean).join('\n');
             
             badgeHtml = `<div class="deal-badge ${insights.badge.cls}">${insights.badge.label}</div>`;
-            linesHtml = detail ? `<div class="deal-insights"><div class="deal-line">${detail.replace(/\n/g, '<br>')}</div></div>` : '';
+            linesHtml = detail ? `<div class="deal-insights"><div class="deal-line">${detail.replace(/\n/g, '<br>')}</div></div>` : '<div class="detail-row empty"></div>';
         }
         
         const sku = skuKey(item).replace(/['"\\]/g, '\\$&');
@@ -395,14 +396,14 @@ function displayItems(items, currentWeekItems = null) {
         
         return `
             <div class="item-card">
-                <button class="add-to-list-btn" onclick='addToCart(${itemJson})' title="Ajouter à ma liste">+</button>
                 <div class="item-header">
                     <div class="item-name">${item.item || 'Sans nom'}</div>
                     ${item.categorie ? `<div class="item-category">${item.categorie}</div>` : ''}
+                    <div class="add-item"><button class="add-to-list-btn" onclick="addToCart(${itemJson})" title="Ajouter à ma liste">+</button></div>
                 </div>
                 <div class="item-details">
-                    ${item.brand ? `<div class="detail-row"><span class="detail-label">Marque:</span><span class="detail-value">${item.brand}</span></div>` : ''}
-                    ${item.unit ? `<div class="detail-row"><span class="detail-label">Unité:</span><span class="detail-value">${item.quantity || 1} ${item.unit}</span></div>` : ''}
+                    ${item.brand ? `<div class="detail-row"><span class="detail-label">Marque:</span><span class="detail-value">${item.brand}</span></div>` : '<div class="detail-row empty"></div>'}
+                    ${item.unit ? `<div class="detail-row"><span class="detail-label">Unité:</span><span class="detail-value">${item.quantity || 1} ${item.unit}</span></div>` : '<div class="detail-row empty"></div>'}
                 </div>
                 <div class="item-price">
                     ${item.unit_price ? `
@@ -519,14 +520,14 @@ function displayItemsCompact(items, currentWeekItems = null) {
                 ? `${insights.pctVsCompetitor < 0 ? '' : '+'}${insights.pctVsCompetitor.toFixed(0)}% vs meilleur concurrent` 
                 : '';
             const last = Number.isFinite(insights.lastTimeWeeks) 
-                ? `Dernière fois à ce prix : il y a ${insights.lastTimeWeeks} semaine${insights.lastTimeWeeks > 1 ? 's' : ''}` 
-                : '';
+                ? `Dernière fois à ce prix : il y a ${insights.lastTimeWeeks} semaine${insights.lastTimeWeeks > 1 ? 's' : '<div class="detail-row empty"></div>'}` 
+                : '<div class="detail-row empty"></div>';
             
             const parts = [vsAvg, vsComp].filter(Boolean).join('  |  ');
             const detail = [parts, last].filter(Boolean).join('\n');
             
             badgeHtml = `<div class="deal-badge ${insights.badge.cls}">${insights.badge.label}</div>`;
-            linesHtml = detail ? `<div class="deal-insights"><div class="deal-line">${detail.replace(/\n/g, '<br>')}</div></div>` : '';
+            linesHtml = detail ? `<div class="deal-insights"><div class="deal-line">${detail.replace(/\n/g, '<br>')}</div></div>` : '<div class="detail-row empty"></div>';
         }
         
         const sku = skuKey(item).replace(/['"\\]/g, '\\$&');
@@ -537,14 +538,14 @@ function displayItemsCompact(items, currentWeekItems = null) {
         
         return `
             <div class="item-card">
-                <button class="add-to-list-btn" onclick='addToCart(${itemJson})' title="Ajouter au meilleur prix">+</button>
                 <div class="item-header">
                     <div class="item-name">${item.item || 'Sans nom'}</div>
                     ${item.categorie ? `<div class="item-category">${item.categorie}</div>` : ''}
+                    <div class="add-item"><button class="add-to-list-btn" onclick="addToCart(${itemJson})" title="Ajouter à ma liste">+</button></div>
                 </div>
                 <div class="item-details">
-                    ${item.brand ? `<div class="detail-row"><span class="detail-label">Marque:</span><span class="detail-value">${item.brand}</span></div>` : ''}
-                    ${item.unit ? `<div class="detail-row"><span class="detail-label">Unité:</span><span class="detail-value">${item.quantity || 1} ${item.unit}</span></div>` : ''}
+                    ${item.brand ? `<div class="detail-row"><span class="detail-label">Marque:</span><span class="detail-value">${item.brand}</span></div>` : '<div class="detail-row empty"></div>'}
+                    ${item.unit ? `<div class="detail-row"><span class="detail-label">Unité:</span><span class="detail-value">${item.quantity || 1} ${item.unit}</span></div>` : '<div class="detail-row empty"></div>'}
                 </div>
                 <div class="item-price">
                     ${item.unit_price ? `

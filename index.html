@@ -10,39 +10,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+
     <!-- ajout du style a la page-->
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="panier.css">
 
 </head>
 <body>
     <!-- Vertical Sidebar -->
-    <header>
-        <div class="header-container">
-            <div class="logo">
-                <h1>🛒 Aubaines Épicerie</h1>
-                <p>Suivi des circulaires du Québec</p>
-            </div>
-            <nav>
-                <ul>
-                    <li>
-                        <a href="#accueil">Accueil</a>
-                        <!-- Store Selector nested under Accueil -->
-                        <div class="nav-subsection">
-                            <div id="store-list-container" class="store-list"></div>
-                        </div>
-                    </li>
-                    <li><a href="circulaire.html">Circulaire</a></li>
-                    <li>
-                        <button onclick="openCart()" class="cart-btn">
-                            <span>🛒 Ma Liste</span>
-                            <span id="cart-count" style="background: rgba(255,255,255,0.2); padding:2px 6px; border-radius:10px; font-size: .8em;">0</span>
-                        </button>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+    <div id="header-placeholder"></div>
 
     <!-- Content Wrapper (Main + Footer) -->
     <div class="content-wrapper">
@@ -90,23 +66,7 @@
             <div id="items-container" class="items-grid"></div>
         </main>
 
-        <footer>
-            <div class="footer-container" style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap: var(--space-16);">
-                <div class="footer-info" style="flex:1;">
-                    <h3 style="font-size: var(--font-size-lg); color: var(--color-primary);">Aubaines Épicerie</h3>
-                    <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">Votre source pour les meilleures aubaines d'épicerie au Québec</p>
-                    <p style="margin-top: var(--space-8); font-size: var(--font-size-sm); color: var(--color-text-secondary);">&copy; 2025 Aubaines Épicerie. Tous droits réservés.</p>
-                </div>
-                <div class="footer-links">
-                    <ul style="list-style:none; display:flex; gap: var(--space-16);">
-                        <li><a href="#a-propos">À propos</a></li>
-                        <li><a href="#confidentialite">Confidentialité</a></li>
-                        <li><a href="#conditions">Conditions</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                    </ul>
-                </div>
-            </div>
-        </footer>
+        <div id="footer-placeholder"></div>
     </div>
 
     <!-- History Modal -->
@@ -145,6 +105,13 @@
                     <span style="font-size: var(--font-size-lg); font-weight:600;">Total estimé :</span>
                     <span id="cart-total" class="cart-total">0.00 $</span>
                 </div>
+                <div class="cart-footer">
+                    <div class="cart-export-row" style="margin-top: 20px; text-align: right;">
+                        <button id="exportPdfBtn" style="padding: 10px 15px; background-color: var(--color-primary); color: white; border: none; border-radius: var(--radius-base); cursor: pointer;">
+                            Exporter en PDF (Liste actuelle) 📥
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -152,7 +119,7 @@
     <!-- Ajout des scripts à la page -->
     <script src="script.js"></script>
     <script src="layout.js"></script>
-    <script src="panier.js"></script>
+    <script src="header_footer.js"></script>
 
 </body>
 </html>
