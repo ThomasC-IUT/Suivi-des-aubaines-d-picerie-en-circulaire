@@ -641,38 +641,5 @@ window.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // -------------------------------------------------------
-    // 📌 Bouton Exporter en PDF
-    // -------------------------------------------------------
-    const exportBtn = document.getElementById("exportPdfBtn");
-    if (exportBtn) {
-        exportBtn.addEventListener("click", () => {
-            const panierElement = document.getElementById("cart-items"); // ID du container du panier
-            
-            html2canvas(panierElement).then(canvas => {
-                const imgData = canvas.toDataURL("image/png");
-                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
-
-                const imgWidth = 190;
-                const pageHeight = 295;
-                const imgHeight = canvas.height * imgWidth / canvas.width;
-                let heightLeft = imgHeight;
-                let position = 10;
-
-                pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-
-                while (heightLeft > 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-                }
-
-                pdf.save("panier.pdf");
-            });
-        });
-    }
-
     console.log('✅ Layout initialisé');
 });

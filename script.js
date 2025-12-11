@@ -505,35 +505,39 @@ function filterItems() {
  */
 function exportCartToPdf() {
     
-    // 1. FORCER LA RELECTURE DIRECTE DE LOCALSTORAGE POUR UNE SOURCE FIABLE
+    // 1. Vérifier si jsPDF est chargé
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+        console.error("La librairie jsPDF n'est pas chargée correctement.");
+        alert("Erreur : La génération de PDF n'est pas disponible pour le moment.");
+        return;
+    }
+
+    // 2. FORCER LA RELECTURE DIRECTE DE LOCALSTORAGE POUR UNE SOURCE FIABLE
     const currentCart = JSON.parse(localStorage.getItem('grocery_cart')) || []; 
     
-    // 2. VÉRIFICATION DE LA LISTE
+    // 3. VÉRIFICATION DE LA LISTE
     if (currentCart.length === 0) {
         alert("Votre liste d'épicerie est vide. Veuillez ajouter des articles pour exporter.");
         return;
     }
 
-    // Assurez-vous que les variables globales sont accessibles et propres
-    // Utilisation de la déstructuration conditionnelle pour une sécurité maximale
-    const userBudget = window.userBudget != null && isFinite(window.userBudget) ? window.userBudget : 0;
-    const getSortableUnitPrice = window.getSortableUnitPrice;
-    
     // Fonction utilitaire pour nettoyer les chaînes de caractères avant l'impression PDF
-    const cleanText = (text) => String(text || '').replace(/\r?\n|\r/g, ' ').trim(); // Remplace les sauts de ligne par des espaces
+    const cleanText = (text) => String(text || '').replace(/\r?\n|\r/g, ' ').trim();
 
-    const pdf = new jspdf.jsPDF('p', 'mm', 'letter');
+    // Initialisation du PDF via window.jspdf.jsPDF
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'letter');
     const MARGIN = 10;
     let y = MARGIN; 
 
     // ----------------------------------------------------
-    // 3. PRÉPARATION DES DONNÉES
+    // 4. PRÉPARATION DES DONNÉES
     // ----------------------------------------------------
     
     // Regroupement des articles par Magasin
     const groupedByStore = {};
     currentCart.forEach(item => {
-        const store = cleanText(item.store_name) || 'Divers'; // Nettoyage ici
+        const store = cleanText(item.store_name) || 'Divers'; 
         if (!groupedByStore[store]) groupedByStore[store] = [];
         groupedByStore[store].push(item);
     });
@@ -544,40 +548,45 @@ function exportCartToPdf() {
     ];
 
     // ----------------------------------------------------
-    // 4. HEADER et BUDGET
+    // 5. HEADER et BUDGET
     // ----------------------------------------------------
-    pdf.setFont('Times', 'bold');
+    pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(18);
     pdf.text("Liste d'Épicerie : Aubaines Circulaires", MARGIN, y);
     y += 10;
     
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Date: ${new Date().toLocaleDateString('fr-CA')}`, MARGIN, y);
+    y += 10;
+
     // ----------------------------------------------------
-    // 5. GÉNÉRATION DES TABLEAUX PAR MAGASIN
+    // 6. GÉNÉRATION DES TABLEAUX PAR MAGASIN
     // ----------------------------------------------------
 
     Object.keys(groupedByStore).sort().forEach(store => {
         
-        // Titre du Magasin
-        y += 5;
-        if (y > pdf.internal.pageSize.getHeight() - MARGIN - 10) {
+        // Titre du Magasin (Gestion du saut de page si on est trop bas)
+        if (y > pdf.internal.pageSize.getHeight() - MARGIN - 20) {
             pdf.addPage();
             y = MARGIN;
         }
 
-        pdf.setFont('Times', 'bold');
+        pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(14);
+        // Ajoute un espace avant le titre
+        y += 5;
         pdf.text(`${store}`, MARGIN, y);
-        y += 5; // Espace avant le tableau
+        y += 5; 
 
         // Création des lignes du tableau (body)
         const tableBody = groupedByStore[store].map(item => {
             let formattedUnitPrice = 'N/D';
             
-            if (typeof getSortableUnitPrice === 'function') {
-                 const unitPriceValue = getSortableUnitPrice(item);
-                if (unitPriceValue != null) {
-                    formattedUnitPrice = `${unitPriceValue.toFixed(2)}$ / Norm.`;
-                }
+            // On utilise la fonction getSortableUnitPrice définie dans ce fichier
+            const unitPriceValue = getSortableUnitPrice(item);
+            if (unitPriceValue != null) {
+                formattedUnitPrice = `${unitPriceValue.toFixed(2)}$ / Norm.`;
             }
             
             // Nettoyage des champs pour le PDF
@@ -587,8 +596,8 @@ function exportCartToPdf() {
             const itemUnit = cleanText(item.unit || '');
 
             return [
-                '[ ]', // Colonne 1 : Case à cocher (remplace le caractère non standard)
-                `${itemName}\n(${itemBrand})`, // Utilise \n pour forcer le retour à la ligne dans la cellule
+                '[ ]', // Case à cocher textuelle
+                `${itemName}\n(${itemBrand})`, 
                 `${itemQty} ${itemUnit}`,
                 item.unit_price ? item.unit_price.toFixed(2) + ' $' : 'N/D',
                 formattedUnitPrice
@@ -610,22 +619,23 @@ function exportCartToPdf() {
             styles: { 
                 fontSize: 9, 
                 cellPadding: 2, 
-                overflow: 'linebreak' // IMPORTANT : Permet aux longues chaînes (Article/Marque) de sauter à la ligne
+                overflow: 'linebreak',
+                valign: 'middle'
             },
             columnStyles: {
-                0: { cellWidth: 8, halign: 'center', minCellHeight: 12 }, // Case à cocher
+                0: { cellWidth: 10, halign: 'center', valign: 'middle' }, // Case à cocher
                 3: { halign: 'center' }, 
                 4: { halign: 'center' }  
             },
             margin: { left: MARGIN, right: MARGIN },
         });
 
-        // Mise à jour de la position Y après le tableau
-        y = pdf.autoTable.previous.finalY;
+        // Mise à jour de la position Y après le tableau pour le prochain magasin
+        y = pdf.lastAutoTable.finalY; // Utilisation correcte de lastAutoTable.finalY
     });
 
     // ----------------------------------------------------
-    // 6. TÉLÉCHARGEMENT
+    // 7. TÉLÉCHARGEMENT
     // ----------------------------------------------------
     pdf.save("liste_epicerie_" + new Date().toISOString().slice(0, 10) + ".pdf");
 }
@@ -684,10 +694,15 @@ window.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Initialisation script.js terminée');
 });
 
+// Écouteur pour le bouton d'export PDF (placé ici pour s'assurer qu'il utilise la bonne fonction)
 document.addEventListener('DOMContentLoaded', function() {
     const exportBtn = document.getElementById("exportPdfBtn");
     
     if (exportBtn) {
-        exportBtn.addEventListener("click", exportCartToPdf);
+        // Supprime les anciens écouteurs s'il y en a (bonne pratique)
+        const newBtn = exportBtn.cloneNode(true);
+        exportBtn.parentNode.replaceChild(newBtn, exportBtn);
+        
+        newBtn.addEventListener("click", exportCartToPdf);
     }
 });
