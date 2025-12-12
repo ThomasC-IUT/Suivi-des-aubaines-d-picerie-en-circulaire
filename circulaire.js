@@ -1,3 +1,7 @@
+/**
+ * Ouvre la circulaire du magasin sélectionné dans un nouvel onglet
+ * @param {string} store - Identifiant du magasin (maxi, iga, metro)
+ */
 function openFlyer(store) {
     let url = "";
     switch (store) {
@@ -11,5 +15,7 @@ function openFlyer(store) {
             url = "https://www.metro.ca/circulaire";
             break;
     }
-    window.open(url, "_blank");
+    if (url) {
+        window.open(url, "_blank");
+    }
 }

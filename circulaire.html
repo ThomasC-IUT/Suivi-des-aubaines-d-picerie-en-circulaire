@@ -6,20 +6,23 @@
     <title>Circulaire</title>
     <link rel="stylesheet" href="style.css">
 
-
+    <!-- Scripts pour les dépendances (Panier/Layout) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+    
     <script src="script.js"></script>
     <script src="layout.js"></script>
-    
-
 </head>
 <body>
 
     <!-- Bandeau Haut -->
     <div id="header-placeholder"></div>
 
-    <!-- Conteneur principal -->
+    <!-- Conteneur principal (Layout Spécifique défini dans style.css) -->
     <div id="container">
-
         <!-- Zone centrale -->
         <main id="content">
             <div class="flyer-card" onclick="openFlyer('maxi')">
@@ -31,14 +34,14 @@
             </div>
 
             <div class="flyer-card" onclick="openFlyer('metro')">
-                <img src="https://www.circulaires.com/images/metro.gif"alt="metro">
+                <img src="https://www.circulaires.com/images/metro.gif" alt="metro">
             </div>
         </main>
 
         <div id="footer-placeholder"></div>
     </div>
 
-    <!-- Cart Modal -->
+    <!-- Cart Modal (Requis pour fonctionnement du Header) -->
     <div id="cart-modal" class="modal-overlay">
         <div class="modal-content cart-modal-content">
             <button class="close-modal" onclick="closeCart()">&times;</button>
@@ -66,12 +69,7 @@
         </div>
     </div>
 
-
-
     <script src="circulaire.js"></script>
     <script src="header_footer.js"></script>
-
-    
-
 </body>
 </html>

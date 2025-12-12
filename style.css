@@ -1,7 +1,7 @@
 /* ============================================================================
    VARIABLES CSS - DESIGN SYSTEM
    ============================================================================ */
-:root {
+   :root {
     /* Couleurs de base */
     --color-cream-50: rgba(252, 252, 249, 1);
     --color-cream-100: rgba(255, 255, 253, 1);
@@ -92,69 +92,42 @@ body {
 }
 
 /* ============================================================================
-   LAYOUT - CONTENEUR GÉNÉRAL (du Code 1)
+   LAYOUT - CONTENEURS SPÉCIFIQUES
    ============================================================================ */
+/* Conteneur principal pour la page Circulaire */
 #container {
     display: flex;
-    height: calc(100vh - 120px);
+    flex-direction: column;
+    min-height: 100vh;
     flex: 1;
 }
 
-/* Menu gauche (du Code 1) */
-#menu {
-    width: 200px;
-    background: var(--color-surface);
-    padding: var(--space-20);
-    border-right: 1px solid var(--color-border);
-}
-
-#menu ul {
-    list-style: none;
-    padding: 0;
-}
-
-#menu li {
-    margin-bottom: var(--space-16);
-}
-
-#menu a,.footer-link {
-    text-decoration: none;
-    font-size: var(--font-size-xl);
-    color: var(--color-text);
-    transition: color 0.2s;
-}
-
-#menu a,.footer-link:hover {
-    color: var(--color-primary);
-}
-
-/* Zone centrale (du Code 1) */
+/* Zone centrale (Page Circulaire) */
 #content {
-    flex-grow: 1;
+    flex: 1;
     display: flex;
     justify-content: space-around;
     align-items: center;
     padding: var(--space-24);
     background: var(--color-background);
 }
-/* ============================================================================
-  bouton exportation du panier
-   ============================================================================ */
-.export-btn {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 10px;
-    font-size: 16px;
-}
-.export-btn:hover {
-    background-color: #0056b3;
+
+/* Wrapper pour Index et Mentions Légales */
+.content-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    height: 100%;
 }
 
-
+main { 
+    max-width: 1400px; 
+    margin: 0 auto; 
+    padding: var(--space-24); 
+    width: 100%;
+    flex: 1; 
+}
 
 /* ============================================================================
    HEADER / BANDEAU
@@ -172,45 +145,6 @@ header {
     flex-direction: column;
     z-index: 100;
     position: relative;
-}
-
-/* Logo (du Code 1, adapté) */
-#logo {
-    position: absolute;
-    left: var(--space-20);
-    top: var(--space-20);
-    width: 80px;
-    height: 80px;
-    background: var(--color-border);
-    border-radius: var(--radius-base);
-    object-fit: cover;
-    border: 2px solid var(--color-card-border);
-}
-
-/* Panier header (du Code 1, adapté) */
-#header-cart {
-    position: absolute;
-    right: var(--space-20);
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.2s;
-    border-radius: var(--radius-base);
-}
-
-#header-cart:hover {
-    background-color: var(--color-border);
-}
-
-#header-cart svg {
-    width: 100%;
-    height: 100%;
-    color: var(--color-text);
 }
 
 .header-container { 
@@ -262,7 +196,7 @@ nav a {
     padding: 8px 0;
 }
 
-nav a:hover { 
+nav a:hover, .footer-link:hover { 
     color: var(--color-primary); 
     transform: translateX(4px); 
 }
@@ -334,29 +268,7 @@ nav a:hover {
 }
 
 /* ============================================================================
-   CONTENT WRAPPER
-   ============================================================================ */
-.content-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    height: 100%;
-}
-
-/* ============================================================================
-   MAIN
-   ============================================================================ */
-main { 
-    max-width: 1400px; 
-    margin: 0 auto; 
-    padding: var(--space-24); 
-    width: 100%;
-    flex: 1; 
-}
-
-/* ============================================================================
-   FILTRES (MODIFIÉ)
+   FILTRES (Page Principale)
    ============================================================================ */
 .filters { 
     background: var(--color-surface); 
@@ -365,12 +277,10 @@ main {
     border: 1px solid var(--color-card-border); 
     margin-bottom: var(--space-24); 
     gap: var(--space-16);
-    
-    /* Modification: Affichage en ligne (Row) pour Desktop */
     display: flex; 
     flex-direction: row; 
-    flex-wrap: wrap; /* Permet de passer à la ligne si l'écran rétrécit un peu */
-    align-items: flex-end; /* Aligne les champs en bas pour être esthétique */
+    flex-wrap: wrap; 
+    align-items: flex-end; 
     justify-content: flex-start;
 }
 
@@ -396,18 +306,16 @@ main {
     background: var(--color-background); 
     color: var(--color-text); 
     font-size: var(--font-size-base); 
-    height: 38px; /* Hauteur fixe pour alignement propre */
+    height: 38px;
 }
 
-/* Nouvelle classe pour la case à cocher "Mode Compact" */
 .filter-group-checkbox {
     display: flex;
     align-items: center;
     gap: 10px;
     min-width: 180px;
-    /* On utilise la hauteur pour s'aligner avec les inputs (height 38px + label margin) */
     height: 38px; 
-    margin-bottom: 2px; /* Petit ajustement optique */
+    margin-bottom: 2px;
 }
 
 .filter-group-checkbox label {
@@ -424,9 +332,8 @@ main {
     accent-color: var(--color-primary);
 }
 
-
 /* ============================================================================
-   FLYER CARDS (du Code 1, adapté avec variables du Code 2)
+   FLYER CARDS (Page Circulaire)
    ============================================================================ */
 .flyer-card {
     width: 250px;
@@ -457,7 +364,7 @@ main {
 }
 
 /* ============================================================================
-   ITEMS GRID
+   ITEMS GRID & CARDS
    ============================================================================ */
 .items-grid { 
     display: grid; 
@@ -465,9 +372,6 @@ main {
     gap: var(--space-20); 
 }
 
-/* ============================================================================
-   ITEM CARDS
-   ============================================================================ */
 .item-card { 
     background: var(--color-surface); 
     border: 1px solid var(--color-card-border); 
@@ -559,7 +463,6 @@ main {
 }
 
 .add-to-list-btn { 
-    
     top: var(--space-16); 
     right: var(--space-16); 
     background: var(--color-surface); 
@@ -584,7 +487,7 @@ main {
 }
 
 /* ============================================================================
-   ÉTATS DE CHARGEMENT
+   ÉTATS DE CHARGEMENT & ERREUR
    ============================================================================ */
 .loading { 
     text-align: center; 
@@ -614,37 +517,13 @@ main {
     line-height: 1.4; 
 }
 
-.badge-best { 
-    background: linear-gradient(90deg, #ff6a3d, #ff3d3d); 
-    color: #fff; 
-}
+.badge-best { background: linear-gradient(90deg, #ff6a3d, #ff3d3d); color: #fff; }
+.badge-excellent { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35); }
+.badge-good { background: rgba(59, 130, 246, 0.12); color: #1d4ed8; border: 1px solid rgba(29, 78, 216, 0.25); }
+.badge-regular { background: rgba(107, 114, 128, 0.12); color: #6b7280; border: 1px solid rgba(107, 114, 128, 0.25); }
 
-.badge-excellent { 
-    background: rgba(16, 185, 129, 0.15); 
-    color: #10b981; 
-    border: 1px solid rgba(16, 185, 129, 0.35); 
-}
-
-.badge-good { 
-    background: rgba(59, 130, 246, 0.12); 
-    color: #1d4ed8; 
-    border: 1px solid rgba(29, 78, 216, 0.25); 
-}
-
-.badge-regular { 
-    background: rgba(107, 114, 128, 0.12); 
-    color: #6b7280; 
-    border: 1px solid rgba(107, 114, 128, 0.25); 
-}
-
-.deal-insights { 
-    margin-top: 6px; 
-}
-
-.deal-line { 
-    font-size: var(--font-size-sm); 
-    color: var(--color-text-secondary); 
-}
+.deal-insights { margin-top: 6px; }
+.deal-line { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
 
 /* ============================================================================
    MODALES
@@ -692,9 +571,7 @@ main {
     z-index: 10; 
 }
 
-.close-modal:hover { 
-    color: var(--color-text); 
-}
+.close-modal:hover { color: var(--color-text); }
 
 .chart-container { 
     position: relative; 
@@ -721,9 +598,7 @@ main {
     justify-content: center; 
 }
 
-.view-history-btn:hover { 
-    background: rgba(33, 128, 141, 0.1); 
-}
+.view-history-btn:hover { background: rgba(33, 128, 141, 0.1); }
 
 /* ============================================================================
    CART MODAL
@@ -771,9 +646,7 @@ main {
     padding-right: 8px; 
 }
 
-.store-group { 
-    margin-bottom: var(--space-24); 
-}
+.store-group { margin-bottom: var(--space-24); }
 
 .store-group-title { 
     font-size: var(--font-size-lg); 
@@ -806,18 +679,9 @@ main {
     border-bottom: 1px solid var(--color-card-border); 
 }
 
-.cart-item-info { 
-    flex: 1; 
-}
-
-.cart-item-title { 
-    font-weight: 500; 
-}
-
-.cart-item-meta { 
-    font-size: var(--font-size-sm); 
-    color: var(--color-text-secondary); 
-}
+.cart-item-info { flex: 1; }
+.cart-item-title { font-weight: 500; }
+.cart-item-meta { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
 
 .cart-item-actions { 
     display: flex; 
@@ -825,9 +689,7 @@ main {
     gap: 12px; 
 }
 
-.cart-price { 
-    font-weight: 600; 
-}
+.cart-price { font-weight: 600; }
 
 .remove-btn { 
     color: #ef4444; 
@@ -850,16 +712,8 @@ main {
     margin-bottom: 4px; 
 }
 
-.cart-total { 
-    font-size: var(--font-size-xl); 
-    font-weight: 700; 
-    color: var(--color-text); 
-}
-
-.cart-savings { 
-    color: #10b981; 
-    font-weight: 500; 
-}
+.cart-total { font-size: var(--font-size-xl); font-weight: 700; color: var(--color-text); }
+.cart-savings { color: #10b981; font-weight: 500; }
 
 /* ============================================================================
    FOOTER
@@ -868,6 +722,14 @@ footer {
     padding: var(--space-24);
     border-top: 1px solid var(--color-border);
     background: var(--color-background);
+    margin-top: auto;
+}
+
+.footer-link {
+    text-decoration: none;
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    transition: color 0.2s;
 }
 
 /* ============================================================================
@@ -900,15 +762,9 @@ footer {
         justify-content: space-between; 
     }
     
-    nav { 
-        width: auto; 
-    }
+    nav { width: auto; }
+    nav ul { flex-direction: row; }
     
-    nav ul { 
-        flex-direction: row; 
-    }
-    
-    /* MODIFICATION : Passage en colonne pour les filtres sur Mobile */
     .filters {
         flex-direction: column;
         align-items: stretch;
@@ -926,19 +782,11 @@ footer {
         padding-top: var(--space-12); 
     }
     
-    .logo { 
-        margin-bottom: 0; 
-    }
+    .logo { margin-bottom: 0; }
     
+    /* Layout spécifique page circulaire mobile */
     #container {
-        flex-direction: column;
         height: auto;
-    }
-    
-    #menu {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--color-border);
     }
     
     #content {
@@ -946,9 +794,7 @@ footer {
         gap: var(--space-20);
     }
     
-    .items-grid { 
-        grid-template-columns: 1fr; 
-    }
+    .items-grid { grid-template-columns: 1fr; }
     
     .footer-container { 
         flex-direction: column; 
@@ -962,44 +808,9 @@ footer {
 }
 
 /* ============================================================================
-   FIX FOOTER POUR CIRCULAIRE.HTML
-   ============================================================================ */
-
-/* Sur la page circulaire, le container doit être vertical */
-#container {
-    display: flex;
-    flex-direction: column; /* ← LA CLÉ : empiler verticalement */
-    min-height: 100vh;
-}
-
-/* Content prend tout l'espace disponible */
-#content {
-    flex: 1;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: var(--space-24);
-    background: var(--color-background);
-}
-
-/* Footer reste en bas */
-footer {
-    margin-top: auto;
-
-}
-
-/* ============================================================================
    EXPORTATION PDF
    ============================================================================ */
-.pdf-print-mode {
-    background-color: #fff !important; 
-}
-.pdf-print-mode * {
-    color: #000 !important; 
-}
-.pdf-print-mode .cart-summary-row {
-    border-color: #ccc !important; 
-}
-.pdf-print-mode .cart-item {
-    box-shadow: none !important;
-}
+.pdf-print-mode { background-color: #fff !important; }
+.pdf-print-mode * { color: #000 !important; }
+.pdf-print-mode .cart-summary-row { border-color: #ccc !important; }
+.pdf-print-mode .cart-item { box-shadow: none !important; }

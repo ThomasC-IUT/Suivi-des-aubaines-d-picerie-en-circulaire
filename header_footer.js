@@ -9,7 +9,7 @@ const baseHeaderHTML = `
             <ul>
                 <li>
                     <a href="index.html">Accueil</a>
-                    <!-- Store Selector nested under Accueil -->
+                    <!-- Store Selector placeholder -->
                 </li>
                 <li><a href="circulaire.html">Circulaire</a></li>
                 <li>
@@ -22,7 +22,7 @@ const baseHeaderHTML = `
         </nav>
     </div>
 </header>
-`
+`;
 
 const footerHTML = `
 <footer>
@@ -39,7 +39,7 @@ const footerHTML = `
         </div>
     </div>
 </footer>
-`
+`;
 
 const storeSelectorHTML = `
 <div class="nav-subsection">
@@ -47,35 +47,33 @@ const storeSelectorHTML = `
 </div>
 `;
 
+/**
+ * Injecte le Header et le Footer dynamiquement dans la page
+ */
 function injectContent() {
-    // --- Logique pour le Header ---
-    
-    // 1. Détermine si la page est index.html (ou la racine /)
+    // 1. Détermine si la page est la page d'accueil
     const currentPath = window.location.pathname;
     const isHomePage = currentPath.endsWith('index.html') || currentPath === '/';
 
     let finalHeaderHTML = baseHeaderHTML;
 
-    // 2. Si c'est la page d'accueil, remplace le placeholder par le sélecteur
+    // 2. Gestion conditionnelle du sélecteur de magasins
     if (isHomePage) {
-        finalHeaderHTML = baseHeaderHTML.replace('<!-- Store Selector nested under Accueil -->', storeSelectorHTML);
+        finalHeaderHTML = baseHeaderHTML.replace('<!-- Store Selector placeholder -->', storeSelectorHTML);
     } else {
-        // Sinon, assurez-vous de supprimer le placeholder
-        finalHeaderHTML = baseHeaderHTML.replace('<!-- Store Selector nested under Accueil -->', '');
+        finalHeaderHTML = baseHeaderHTML.replace('<!-- Store Selector placeholder -->', '');
     }
 
-    // 3. Injection du Header
+    // 3. Injection
     const headerPlaceholder = document.getElementById('header-placeholder');
     if (headerPlaceholder) {
         headerPlaceholder.innerHTML = finalHeaderHTML;
     }
 
-    // --- Logique pour le Footer (inchangée) ---
     const footerPlaceholder = document.getElementById('footer-placeholder');
     if (footerPlaceholder) {
         footerPlaceholder.innerHTML = footerHTML;
     }
-    
 }
 
 document.addEventListener('DOMContentLoaded', injectContent);

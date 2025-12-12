@@ -5,20 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mentions légales</title>
     
-    <!-- Lien vers le style global du site -->
     <link rel="stylesheet" href="style.css">
     
-    <!-- Scripts nécessaires pour le header, le layout et le panier -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
 
-    <!-- Styles spécifiques pour la mise en forme du texte légal -->
+    <!-- Styles spécifiques Mentions Légales -->
     <style>
-        /* On redonne un peu de style "document" car le reset global (margin:0) est strict */
         .legal-content h1 {
             font-size: var(--font-size-3xl);
             color: var(--color-primary);
@@ -56,11 +52,8 @@
     </style>
 </head>
 <body>
-
-    <!-- Placeholder pour le Header/Menu latéral (géré par header_footer.js) -->
     <div id="header-placeholder"></div>
 
-    <!-- Wrapper principal du contenu (comme sur index.html) -->
     <div class="content-wrapper">
         <main class="legal-content">
             <h1>Mentions légales</h1>
@@ -97,11 +90,10 @@
             </section>
         </main>
 
-        <!-- Placeholder pour le Footer (géré par header_footer.js) -->
         <div id="footer-placeholder"></div>
     </div>
 
-    <!-- Cart Modal (NÉCESSAIRE pour que le bouton du header fonctionne sans erreur) -->
+    <!-- Cart Modal (Requis) -->
     <div id="cart-modal" class="modal-overlay">
         <div class="modal-content cart-modal-content">
             <button class="close-modal" onclick="closeCart()">&times;</button>
@@ -136,10 +128,8 @@
         </div>
     </div>
 
-    <!-- Ajout des scripts JS -->
     <script src="script.js"></script>
     <script src="layout.js"></script>
     <script src="header_footer.js"></script>
-
 </body>
 </html>

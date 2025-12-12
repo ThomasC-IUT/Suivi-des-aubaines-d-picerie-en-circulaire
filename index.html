@@ -4,20 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suivi des aubaines d'épicerie en circulaire</title>
+    
+    <!-- Dépendances Externes -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
 
-    <!-- ajout du style a la page-->
+    <!-- Styles -->
     <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
-    <!-- Vertical Sidebar -->
+    <!-- Vertical Sidebar (injecté via header_footer.js) -->
     <div id="header-placeholder"></div>
 
     <!-- Content Wrapper (Main + Footer) -->
@@ -116,10 +115,9 @@
         </div>
     </div>
 
-    <!-- Ajout des scripts à la page -->
+    <!-- Logique -->
     <script src="script.js"></script>
     <script src="layout.js"></script>
     <script src="header_footer.js"></script>
-
 </body>
 </html>

@@ -5,9 +5,10 @@
 // ============================================================================
 // CONFIGURATION SUPABASE
 // ============================================================================
-
 const SUPABASE_URL = 'https://uusnmuuysekydjtkkjjb.supabase.co';
+// Note: La clé API est requise pour le fonctionnement en lecture seule publique
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1c25tdXV5c2VreWRqdGtrampiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0Mjc3MDksImV4cCI6MjA3OTAwMzcwOX0.6rRP22MpPe4QYL-Ibx-k764aS1AyT3X2OwSrytKU5sY';
+
 const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false }
 }) : null;
@@ -15,23 +16,22 @@ const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SU
 // ============================================================================
 // ÉTAT GLOBAL DE L'APPLICATION
 // ============================================================================
-
 let allItems = [];
 let filteredItems = [];
 let weekGroups = {};
 let availableWeeks = [];
 let currentWeek = null;
 
-// État du panier
+// État du panier (Persistance LocalStorage)
 let shoppingCart = JSON.parse(localStorage.getItem('grocery_cart')) || [];
 let userBudget = parseFloat(localStorage.getItem('grocery_budget')) || 100;
 
-// Analytics
+// Analytics (Mémorisés pour performance)
 let analyticsBySku = new Map();
 let historyBySku = new Map();
 
 // ============================================================================
-// UTILITAIRES DE GESTION DES SEMAINES ISO
+// UTILITAIRES : DATES & SEMAINES
 // ============================================================================
 
 /**
@@ -80,7 +80,7 @@ function groupItemsByWeek(items) {
 }
 
 /**
- * Retourne la semaine la plus récente
+ * Retourne la semaine la plus récente disponible
  */
 function getMostRecentWeek(groups) {
     const weeks = Object.keys(groups).sort().reverse();
@@ -88,12 +88,11 @@ function getMostRecentWeek(groups) {
 }
 
 // ============================================================================
-// CALCULS ET TRI
+// LOGIQUE MÉTIER : PRIX & TRI
 // ============================================================================
 
 /**
- * Calcule le prix unitaire normalisé pour le tri et l'analyse
- * (ramène tout en $/100g, $/100ml ou $/unité)
+ * Normalise le prix unitaire pour comparaison (ramène tout en $/unité de base)
  * @param {Object} item - Item à analyser
  * @returns {number|null} Prix normalisé
  */
@@ -116,9 +115,7 @@ function getSortableUnitPrice(item) {
 }
 
 /**
- * Trie les items selon le critère sélectionné
- * @param {Array} items - Items à trier
- * @returns {Array} Items triés
+ * Trie les items selon le critère sélectionné dans l'interface
  */
 function sortItems(items) {
     const filterSort = document.getElementById('filter-sort');
@@ -146,19 +143,16 @@ function sortItems(items) {
             if (B == null) return -1;
             return B - A;
         }
-        
         return 0;
     });
 }
 
 // ============================================================================
-// ANALYTICS ET DÉTECTION D'AUBAINES
+// ANALYTICS & INTELLIGENCE D'AFFAIRES
 // ============================================================================
 
 /**
- * Crée un identifiant unique pour un produit (SKU)
- * @param {Object} item - Item à identifier
- * @returns {string} Identifiant unique
+ * Génère un identifiant unique (SKU logique) pour un produit
  */
 function skuKey(item) {
     const name = (item.item || '').trim().toLowerCase();
@@ -166,13 +160,6 @@ function skuKey(item) {
     const qty = String(item.quantity || '').trim().toLowerCase();
     const unit = (item.unit || '').trim().toLowerCase();
     return `${name}__${brand}__${qty}${unit}`;
-}
-
-/**
- * Alias pour le prix unitaire normalisé
- */
-function normalizedUnitValue(item) {
-    return getSortableUnitPrice(item);
 }
 
 /**
@@ -185,7 +172,7 @@ function buildAnalytics() {
     // Construire l'historique de chaque SKU
     allItems.forEach(it => {
         const key = skuKey(it);
-        const unitVal = normalizedUnitValue(it);
+        const unitVal = getSortableUnitPrice(it);
         if (unitVal == null) return;
         
         const dt = it.date ? new Date(it.date) : null;
@@ -193,7 +180,7 @@ function buildAnalytics() {
         historyBySku.get(key).push({ unitVal, date: dt, item: it });
     });
     
-    // Filtrer sur 12 dernières semaines
+    // Filtrer sur 12 dernières semaines (84 jours)
     const now = new Date();
     const cutoff = new Date(now.getTime() - 84 * 24 * 60 * 60 * 1000);
     
@@ -205,7 +192,7 @@ function buildAnalytics() {
         }
     });
     
-    // Calculer moyenne, min, max
+    // Calculer les métriques (moyenne, min, max)
     historyBySku.forEach((arr, key) => {
         const values = arr.map(r => r.unitVal).filter(v => Number.isFinite(v));
         if (values.length === 0) return;
@@ -219,27 +206,24 @@ function buildAnalytics() {
 }
 
 /**
- * Calcule les insights d'une aubaine (badge, % vs moyenne, etc.)
- * @param {Object} item - Item à analyser
- * @param {Array} currentWeekItems - Items de la semaine pour comparaison
- * @returns {Object|null} Insights calculés
+ * Calcule les métriques d'une aubaine (badge, % vs moyenne, etc.)
  */
 function computeDealInsights(item, currentWeekItems) {
     const key = skuKey(item);
     const ana = analyticsBySku.get(key);
-    const val = normalizedUnitValue(item);
+    const val = getSortableUnitPrice(item);
     
     if (!ana || val == null) return null;
     
     // % vs moyenne historique
     const pctVsAvg = ((val - ana.avg) / ana.avg) * 100;
     
-    // Meilleur concurrent cette semaine
+    // Comparaison concurrentielle
     let bestCompetitor = null;
     if (Array.isArray(currentWeekItems)) {
         const sameSku = currentWeekItems.filter(it => skuKey(it) === key);
         const best = sameSku.reduce((best, it) => {
-            const v = normalizedUnitValue(it);
+            const v = getSortableUnitPrice(it);
             if (v == null) return best;
             if (!best || v < best.v) return { v, store: it.store_name };
             return best;
@@ -251,7 +235,7 @@ function computeDealInsights(item, currentWeekItems) {
         ? ((val - bestCompetitor.v) / bestCompetitor.v) * 100 
         : null;
     
-    // Dernière fois à ce prix
+    // Fréquence du prix
     let lastTimeWeeks = null;
     const history = historyBySku.get(key) || [];
     const ref = val;
@@ -266,12 +250,12 @@ function computeDealInsights(item, currentWeekItems) {
         lastTimeWeeks = Math.round(diff / (7 * 24 * 60 * 60 * 1000));
     }
     
-    // Calcul du percentile
+    // Classement percentile
     const values = (history || []).map(h => h.unitVal).filter(v => Number.isFinite(v)).sort((a, b) => a - b);
     const rankCount = values.filter(v => v <= val).length;
     const percentile = values.length ? (rankCount / values.length) * 100 : 100;
     
-    // Attribution du badge
+    // Détermination du badge
     let badge = { cls: 'badge-regular', label: '⚠️ PRIX HABITUEL/ÉLEVÉ' };
     if (percentile <= 10) {
         badge = { cls: 'badge-best', label: '🔥 MEILLEUR PRIX HISTORIQUE' };
@@ -285,12 +269,11 @@ function computeDealInsights(item, currentWeekItems) {
 }
 
 // ============================================================================
-// GESTION DU PANIER
+// GESTION DU PANIER (ACTIONS UTILISATEUR)
 // ============================================================================
 
 /**
  * Ajoute un item au panier
- * @param {Object} item - Item à ajouter
  */
 function addToCart(item) {
     const sku = skuKey(item);
@@ -305,7 +288,7 @@ function addToCart(item) {
         saveCart();
         updateCartCount();
         
-        // Animation du bouton
+        // Feedback visuel
         const btn = document.activeElement;
         if (btn) {
             const original = btn.innerHTML;
@@ -317,7 +300,6 @@ function addToCart(item) {
 
 /**
  * Retire un item du panier
- * @param {number} index - Index de l'item à retirer
  */
 function removeFromCart(index) {
     shoppingCart.splice(index, 1);
@@ -337,7 +319,7 @@ function saveCart() {
 }
 
 /**
- * Met à jour le compteur du panier
+ * Met à jour le compteur du panier dans le header
  */
 function updateCartCount() {
     const cartCount = document.getElementById('cart-count');
@@ -347,7 +329,7 @@ function updateCartCount() {
 }
 
 // ============================================================================
-// CHARGEMENT DES DONNÉES
+// RÉCUPÉRATION DES DONNÉES (API)
 // ============================================================================
 
 /**
@@ -355,7 +337,6 @@ function updateCartCount() {
  */
 async function fetchItems() {
     if (!supabase) {
-        console.warn('⚠️ Supabase non disponible');
         return;
     }
     
@@ -373,7 +354,7 @@ async function fetchItems() {
         buildAnalytics();
         currentWeek = getMostRecentWeek(weekGroups);
         
-        // Vérifier que les éléments DOM existent avant de continuer
+        // Initialisation de l'interface après chargement
         if (typeof populateFilters === 'function') {
             populateFilters();
         }
@@ -381,32 +362,14 @@ async function fetchItems() {
         if (currentWeek && typeof displayWeekItems === 'function') {
             displayWeekItems(currentWeek);
         } else if (typeof renderList === 'function') {
-            // Afficher tous les items si pas de semaine
-            const categoryFilter = document.getElementById('filter-category');
-            const searchFilter = document.getElementById('filter-search');
-            
-            const categoryValue = categoryFilter ? categoryFilter.value.toLowerCase() : '';
-            const searchValue = searchFilter ? searchFilter.value.toLowerCase() : '';
-            const checkedStores = Array.from(document.querySelectorAll('input[name="store-select"]:checked')).map(cb => cb.value);
-            
-            let filtered = data.filter(item => {
-                const matchStore = !item.store_name || checkedStores.includes(item.store_name);
-                const matchCategory = !categoryValue || (item.categorie && item.categorie.toLowerCase() === categoryValue);
-                const matchSearch = !searchValue || 
-                    (item.item && item.item.toLowerCase().includes(searchValue)) || 
-                    (item.brand && item.brand.toLowerCase().includes(searchValue));
-                return matchStore && matchCategory && matchSearch;
-            });
-            
-            filteredItems = sortItems(filtered);
-            renderList(filteredItems, data);
+            // Fallback: affichage global si pas de semaine spécifique
+            filterItems();
         }
         
         const loadingEl = document.getElementById('loading');
         if (loadingEl) loadingEl.style.display = 'none';
         
     } catch (err) {
-        console.error('Erreur lors du chargement:', err);
         const loadingEl = document.getElementById('loading');
         if (loadingEl) loadingEl.style.display = 'none';
         
@@ -418,12 +381,11 @@ async function fetchItems() {
 }
 
 // ============================================================================
-// FILTRAGE ET AFFICHAGE PAR SEMAINE
+// NAVIGATION & FILTRAGE
 // ============================================================================
 
 /**
  * Affiche les items d'une semaine spécifique
- * @param {string} weekKey - Clé de semaine (ex: "2025-W48")
  */
 function displayWeekItems(weekKey) {
     currentWeek = weekKey;
@@ -435,8 +397,18 @@ function displayWeekItems(weekKey) {
     }
     
     const weekItems = weekGroups[weekKey] || [];
+    applyFilters(weekItems);
     
-    // Appliquer les filtres
+    if (typeof updateWeekSelector === 'function') updateWeekSelector();
+    if (typeof updateNavigationButtons === 'function') updateNavigationButtons();
+}
+
+/**
+ * Applique les filtres actifs à la liste d'items fournie ou globale
+ */
+function applyFilters(sourceItems = null) {
+    const itemsToFilter = sourceItems || allItems;
+    
     const categoryFilter = document.getElementById('filter-category');
     const searchFilter = document.getElementById('filter-search');
     
@@ -444,7 +416,7 @@ function displayWeekItems(weekKey) {
     const searchValue = searchFilter ? searchFilter.value.toLowerCase() : '';
     const checkedStores = Array.from(document.querySelectorAll('input[name="store-select"]:checked')).map(cb => cb.value);
     
-    let filtered = weekItems.filter(item => {
+    let filtered = itemsToFilter.filter(item => {
         const matchStore = !item.store_name || checkedStores.includes(item.store_name);
         const matchCategory = !categoryValue || (item.categorie && item.categorie.toLowerCase() === categoryValue);
         const matchSearch = !searchValue || 
@@ -456,85 +428,48 @@ function displayWeekItems(weekKey) {
     filteredItems = sortItems(filtered);
     
     if (typeof renderList === 'function') {
-        renderList(filteredItems, weekItems);
-    }
-    
-    if (typeof updateWeekSelector === 'function') {
-        updateWeekSelector();
-    }
-    
-    if (typeof updateNavigationButtons === 'function') {
-        updateNavigationButtons();
+        renderList(filteredItems, sourceItems || allItems);
     }
 }
 
 /**
- * Applique les filtres de recherche/catégorie/magasin
+ * Wrapper pour l'événement de filtrage
  */
 function filterItems() {
     if (currentWeek) {
         displayWeekItems(currentWeek);
     } else {
-        const categoryFilter = document.getElementById('filter-category');
-        const searchFilter = document.getElementById('filter-search');
-        
-        const categoryValue = categoryFilter ? categoryFilter.value.toLowerCase() : '';
-        const searchValue = searchFilter ? searchFilter.value.toLowerCase() : '';
-        const checkedStores = Array.from(document.querySelectorAll('input[name="store-select"]:checked')).map(cb => cb.value);
-        
-        let filtered = allItems.filter(item => {
-            const matchStore = !item.store_name || checkedStores.includes(item.store_name);
-            const matchCategory = !categoryValue || (item.categorie && item.categorie.toLowerCase() === categoryValue);
-            const matchSearch = !searchValue || 
-                (item.item && item.item.toLowerCase().includes(searchValue)) || 
-                (item.brand && item.brand.toLowerCase().includes(searchValue));
-            return matchStore && matchCategory && matchSearch;
-        });
-        
-        filteredItems = sortItems(filtered);
-        
-        if (typeof renderList === 'function') {
-            renderList(filteredItems, allItems);
-        }
+        applyFilters(allItems);
     }
 }
 
+// ============================================================================
+// EXPORTATION PDF
+// ============================================================================
+
 /**
- * Exporte le contenu de la liste d'épicerie (shoppingCart) en un document PDF
- * structuré en tableau, regroupé par magasin, en utilisant jsPDF-AutoTable.
+ * Exporte le panier en PDF via jsPDF et AutoTable
  */
 function exportCartToPdf() {
-    
-    // 1. Vérifier si jsPDF est chargé
     if (!window.jspdf || !window.jspdf.jsPDF) {
-        console.error("La librairie jsPDF n'est pas chargée correctement.");
         alert("Erreur : La génération de PDF n'est pas disponible pour le moment.");
         return;
     }
 
-    // 2. FORCER LA RELECTURE DIRECTE DE LOCALSTORAGE POUR UNE SOURCE FIABLE
     const currentCart = JSON.parse(localStorage.getItem('grocery_cart')) || []; 
     
-    // 3. VÉRIFICATION DE LA LISTE
     if (currentCart.length === 0) {
-        alert("Votre liste d'épicerie est vide. Veuillez ajouter des articles pour exporter.");
+        alert("Votre liste d'épicerie est vide.");
         return;
     }
 
-    // Fonction utilitaire pour nettoyer les chaînes de caractères avant l'impression PDF
     const cleanText = (text) => String(text || '').replace(/\r?\n|\r/g, ' ').trim();
-
-    // Initialisation du PDF via window.jspdf.jsPDF
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'letter');
     const MARGIN = 10;
     let y = MARGIN; 
 
-    // ----------------------------------------------------
-    // 4. PRÉPARATION DES DONNÉES
-    // ----------------------------------------------------
-    
-    // Regroupement des articles par Magasin
+    // Regroupement par magasin
     const groupedByStore = {};
     currentCart.forEach(item => {
         const store = cleanText(item.store_name) || 'Divers'; 
@@ -542,14 +477,9 @@ function exportCartToPdf() {
         groupedByStore[store].push(item);
     });
 
-    // En-têtes du tableau
-    const headers = [
-        ["", "Article / Marque", "Qté & Unité", "Prix Total", "Prix Unitaire"]
-    ];
+    const headers = [["", "Article / Marque", "Qté & Unité", "Prix Total", "Prix Unitaire"]];
 
-    // ----------------------------------------------------
-    // 5. HEADER et BUDGET
-    // ----------------------------------------------------
+    // En-tête du document
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(18);
     pdf.text("Liste d'Épicerie : Aubaines Circulaires", MARGIN, y);
@@ -560,13 +490,8 @@ function exportCartToPdf() {
     pdf.text(`Date: ${new Date().toLocaleDateString('fr-CA')}`, MARGIN, y);
     y += 10;
 
-    // ----------------------------------------------------
-    // 6. GÉNÉRATION DES TABLEAUX PAR MAGASIN
-    // ----------------------------------------------------
-
+    // Génération des tableaux
     Object.keys(groupedByStore).sort().forEach(store => {
-        
-        // Titre du Magasin (Gestion du saut de page si on est trop bas)
         if (y > pdf.internal.pageSize.getHeight() - MARGIN - 20) {
             pdf.addPage();
             y = MARGIN;
@@ -574,135 +499,103 @@ function exportCartToPdf() {
 
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(14);
-        // Ajoute un espace avant le titre
         y += 5;
         pdf.text(`${store}`, MARGIN, y);
         y += 5; 
 
-        // Création des lignes du tableau (body)
         const tableBody = groupedByStore[store].map(item => {
             let formattedUnitPrice = 'N/D';
-            
-            // On utilise la fonction getSortableUnitPrice définie dans ce fichier
             const unitPriceValue = getSortableUnitPrice(item);
             if (unitPriceValue != null) {
                 formattedUnitPrice = `${unitPriceValue.toFixed(2)}$ / Norm.`;
             }
             
-            // Nettoyage des champs pour le PDF
-            const itemName = cleanText(item.item || 'Sans nom');
-            const itemBrand = cleanText(item.brand || 'Sans marque');
-            const itemQty = cleanText(item.quantity || '');
-            const itemUnit = cleanText(item.unit || '');
-
             return [
-                '[ ]', // Case à cocher textuelle
-                `${itemName}\n(${itemBrand})`, 
-                `${itemQty} ${itemUnit}`,
+                '[ ]', 
+                `${cleanText(item.item || 'Sans nom')}\n(${cleanText(item.brand || 'Sans marque')})`, 
+                `${cleanText(item.quantity || '')} ${cleanText(item.unit || '')}`,
                 item.unit_price ? item.unit_price.toFixed(2) + ' $' : 'N/D',
                 formattedUnitPrice
             ];
         });
 
-        // Génération du tableau avec jsPDF-AutoTable
-        if (typeof pdf.autoTable !== 'function') {
-             console.error("Le plugin jspdf-autotable est manquant.");
-             return; 
+        if (typeof pdf.autoTable === 'function') {
+            pdf.autoTable({
+                head: headers,
+                body: tableBody,
+                startY: y,
+                theme: 'striped',
+                headStyles: { fillColor: [50, 50, 50], fontSize: 10 },
+                styles: { fontSize: 9, cellPadding: 2, overflow: 'linebreak', valign: 'middle' },
+                columnStyles: {
+                    0: { cellWidth: 10, halign: 'center', valign: 'middle' }, 
+                    3: { halign: 'center' }, 
+                    4: { halign: 'center' }  
+                },
+                margin: { left: MARGIN, right: MARGIN },
+            });
+            y = pdf.lastAutoTable.finalY;
         }
-        
-        pdf.autoTable({
-            head: headers,
-            body: tableBody,
-            startY: y,
-            theme: 'striped',
-            headStyles: { fillColor: [50, 50, 50], fontSize: 10 },
-            styles: { 
-                fontSize: 9, 
-                cellPadding: 2, 
-                overflow: 'linebreak',
-                valign: 'middle'
-            },
-            columnStyles: {
-                0: { cellWidth: 10, halign: 'center', valign: 'middle' }, // Case à cocher
-                3: { halign: 'center' }, 
-                4: { halign: 'center' }  
-            },
-            margin: { left: MARGIN, right: MARGIN },
-        });
-
-        // Mise à jour de la position Y après le tableau pour le prochain magasin
-        y = pdf.lastAutoTable.finalY; // Utilisation correcte de lastAutoTable.finalY
     });
 
-    // ----------------------------------------------------
-    // 7. TÉLÉCHARGEMENT
-    // ----------------------------------------------------
     pdf.save("liste_epicerie_" + new Date().toISOString().slice(0, 10) + ".pdf");
 }
 
 
 // ============================================================================
-// EVENT LISTENERS & INITIALISATION
+// INITIALISATION
 // ============================================================================
 
-// Attendre que TOUT le HTML soit chargé
 window.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ DOM chargé, initialisation script.js...');
     
-    // Event listeners des filtres (avec vérifications)
-    const filterCategory = document.getElementById('filter-category');
-    const filterSort = document.getElementById('filter-sort');
-    const filterSearch = document.getElementById('filter-search');
-    const compactMode = document.getElementById('compact-mode');
-    const weekSelector = document.getElementById('week-selector');
-    const prevWeek = document.getElementById('prev-week');
-    const nextWeek = document.getElementById('next-week');
+    // Initialisation des écouteurs d'événements
+    const elements = {
+        filterCategory: document.getElementById('filter-category'),
+        filterSort: document.getElementById('filter-sort'),
+        filterSearch: document.getElementById('filter-search'),
+        compactMode: document.getElementById('compact-mode'),
+        weekSelector: document.getElementById('week-selector'),
+        prevWeek: document.getElementById('prev-week'),
+        nextWeek: document.getElementById('next-week'),
+        exportBtn: document.getElementById("exportPdfBtn")
+    };
     
-    if (filterCategory) filterCategory.addEventListener('change', filterItems);
-    if (filterSort) filterSort.addEventListener('change', filterItems);
-    if (filterSearch) filterSearch.addEventListener('input', filterItems);
-    if (compactMode) compactMode.addEventListener('change', filterItems);
+    if (elements.filterCategory) elements.filterCategory.addEventListener('change', filterItems);
+    if (elements.filterSort) elements.filterSort.addEventListener('change', filterItems);
+    if (elements.filterSearch) elements.filterSearch.addEventListener('input', filterItems);
+    if (elements.compactMode) elements.compactMode.addEventListener('change', filterItems);
     
-    if (weekSelector) {
-        weekSelector.addEventListener('change', e => {
+    if (elements.weekSelector) {
+        elements.weekSelector.addEventListener('change', e => {
             if (e.target.value) displayWeekItems(e.target.value);
         });
     }
     
-    if (prevWeek) {
-        prevWeek.addEventListener('click', () => {
+    if (elements.prevWeek) {
+        elements.prevWeek.addEventListener('click', () => {
             const i = availableWeeks.indexOf(currentWeek);
             if (i < availableWeeks.length - 1) displayWeekItems(availableWeeks[i + 1]);
         });
     }
     
-    if (nextWeek) {
-        nextWeek.addEventListener('click', () => {
+    if (elements.nextWeek) {
+        elements.nextWeek.addEventListener('click', () => {
             const i = availableWeeks.indexOf(currentWeek);
             if (i > 0) displayWeekItems(availableWeeks[i - 1]);
         });
+    }
+
+    if (elements.exportBtn) {
+        const newBtn = elements.exportBtn.cloneNode(true);
+        elements.exportBtn.parentNode.replaceChild(newBtn, elements.exportBtn);
+        newBtn.addEventListener("click", exportCartToPdf);
     }
     
     // Initialiser le panier
     updateCartCount();
     
-    // Charger les données seulement si on est sur index.html
+    // Charger les données si le conteneur principal existe
     if (document.getElementById('items-container')) {
         fetchItems();
-    }
-    
-    console.log('✅ Initialisation script.js terminée');
-});
-
-// Écouteur pour le bouton d'export PDF (placé ici pour s'assurer qu'il utilise la bonne fonction)
-document.addEventListener('DOMContentLoaded', function() {
-    const exportBtn = document.getElementById("exportPdfBtn");
-    
-    if (exportBtn) {
-        // Supprime les anciens écouteurs s'il y en a (bonne pratique)
-        const newBtn = exportBtn.cloneNode(true);
-        exportBtn.parentNode.replaceChild(newBtn, exportBtn);
-        
-        newBtn.addEventListener("click", exportCartToPdf);
     }
 });
