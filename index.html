@@ -6,30 +6,35 @@
     <title>Suivi des aubaines d'épicerie en circulaire</title>
     
     <!-- Dépendances Externes -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js" defer></script>
 
     <!-- Styles -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Scripts Application (Ordre important : Layout/Utils -> Logic) -->
+    <script src="header_footer.js" defer></script>
+    <script src="layout.js" defer></script>
+    <script src="script.js" defer></script>
 </head>
 <body>
-    <!-- Vertical Sidebar (injecté via header_footer.js) -->
+    <!-- Vertical Sidebar (injecté par header_footer.js) -->
     <div id="header-placeholder"></div>
 
     <!-- Content Wrapper (Main + Footer) -->
     <div class="content-wrapper">
         <main>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-24); flex-wrap:wrap; gap: var(--space-16);">
-                <h2 id="week-title" style="margin:0; font-size: var(--font-size-3xl);">Aubaines en vedette</h2>
-                <div style="display:flex; gap: var(--space-12); align-items:center;">
-                    <button id="prev-week" style="padding:8px 16px; border:1px solid var(--color-border); border-radius: var(--radius-base); background: var(--color-surface); color: var(--color-text); cursor:pointer;">← Semaine précédente</button>
-                    <select id="week-selector" style="padding:8px 12px; border:1px solid var(--color-border); border-radius: var(--radius-base); background: var(--color-surface); color: var(--color-text); min-width:200px;">
+            <div class="week-controls">
+                <h2 id="week-title" class="font-3xl" style="margin:0;">Aubaines en vedette</h2>
+                <div class="week-navigation">
+                    <button id="prev-week" class="btn-secondary">← Semaine précédente</button>
+                    <select id="week-selector" class="select-input">
                         <option value="">Chargement...</option>
                     </select>
-                    <button id="next-week" style="padding:8px 16px; border:1px solid var(--color-border); border-radius: var(--radius-base); background: var(--color-surface); color: var(--color-text); cursor:pointer;">Semaine suivante →</button>
+                    <button id="next-week" class="btn-secondary">Semaine suivante →</button>
                 </div>
             </div>
 
@@ -68,56 +73,19 @@
         <div id="footer-placeholder"></div>
     </div>
 
-    <!-- History Modal -->
+    <!-- History Modal (Spécifique à l'index/circulaire, gardé ici ou peut être déplacé si utilisé partout) -->
+    <!-- Le modal historique est utilisé uniquement par script.js/layout.js donc gardé ici pour structure, mais le cart est global -->
     <div id="history-modal" class="modal-overlay">
         <div class="modal-content">
             <button class="close-modal" onclick="closeHistoryModal()">&times;</button>
-            <h3 id="modal-title" style="margin-bottom: var(--space-8); font-size: var(--font-size-xl); color: var(--color-primary);">Historique des prix</h3>
-            <p id="modal-subtitle" style="color: var(--color-text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--space-16);"></p>
+            <h3 id="modal-title" class="font-xl text-primary mb-8">Historique des prix</h3>
+            <p id="modal-subtitle" class="text-secondary font-sm mb-16"></p>
             <div class="chart-container">
                 <canvas id="priceChart"></canvas>
             </div>
         </div>
     </div>
-
-    <!-- Cart Modal -->
-    <div id="cart-modal" class="modal-overlay">
-        <div class="modal-content cart-modal-content">
-            <button class="close-modal" onclick="closeCart()">&times;</button>
-            <div class="cart-header">
-                <h3 style="font-size: var(--font-size-xl); color: var(--color-primary);">Ma Liste d'Épicerie</h3>
-                <div class="budget-control">
-                    <label for="cart-budget">Budget Max ($):</label>
-                    <input type="number" id="cart-budget" value="100" onchange="updateCartDisplay()">
-                    <span id="budget-warning" class="budget-alert" style="display:none;">⚠️ Budget dépassé !</span>
-                </div>
-            </div>
-            <div id="cart-items" class="cart-items-container">
-                <p style="text-align:center; color: var(--color-text-secondary); margin-top:20px;">Votre liste est vide.</p>
-            </div>
-            <div class="cart-footer">
-                <div class="cart-summary-row">
-                    <span>Économies estimées (vs prix moyen) :</span>
-                    <span id="cart-savings" class="cart-savings">0.00 $</span>
-                </div>
-                <div class="cart-summary-row">
-                    <span style="font-size: var(--font-size-lg); font-weight:600;">Total estimé :</span>
-                    <span id="cart-total" class="cart-total">0.00 $</span>
-                </div>
-                <div class="cart-footer">
-                    <div class="cart-export-row" style="margin-top: 20px; text-align: right;">
-                        <button id="exportPdfBtn" style="padding: 10px 15px; background-color: var(--color-primary); color: white; border: none; border-radius: var(--radius-base); cursor: pointer;">
-                            Exporter en PDF (Liste actuelle) 📥
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Logique -->
-    <script src="script.js"></script>
-    <script src="layout.js"></script>
-    <script src="header_footer.js"></script>
+    
+    <!-- NOTE: Le modal Panier (#cart-modal) est maintenant injecté automatiquement par header_footer.js -->
 </body>
 </html>

@@ -3,73 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Circulaire</title>
+    <title>Circulaires</title>
     <link rel="stylesheet" href="style.css">
 
-    <!-- Scripts pour les dépendances (Panier/Layout) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+    <!-- Scripts pour les dépendances -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js" defer></script>
     
-    <script src="script.js"></script>
-    <script src="layout.js"></script>
+    <!-- Scripts Application -->
+    <script src="header_footer.js" defer></script>
+    <script src="layout.js" defer></script>
+    <script src="script.js" defer></script>
+    <script src="circulaire.js" defer></script>
 </head>
 <body>
 
     <!-- Bandeau Haut -->
     <div id="header-placeholder"></div>
 
-    <!-- Conteneur principal (Layout Spécifique défini dans style.css) -->
+    <!-- Conteneur principal -->
     <div id="container">
         <!-- Zone centrale -->
         <main id="content">
             <div class="flyer-card" onclick="openFlyer('maxi')">
-                <img src="https://www.circulaires.com/images/maxi-cie.gif" alt="Maxi">
+                <img src="https://www.circulaires.com/images/maxi-cie.gif" alt="Circulaire Maxi">
             </div>
 
             <div class="flyer-card" onclick="openFlyer('iga')">
-                <img src="https://www.circulaires.com/images/iga.gif" alt="IGA">
+                <img src="https://www.circulaires.com/images/iga.gif" alt="Circulaire IGA">
             </div>
 
             <div class="flyer-card" onclick="openFlyer('metro')">
-                <img src="https://www.circulaires.com/images/metro.gif" alt="metro">
+                <img src="https://www.circulaires.com/images/metro.gif" alt="Circulaire Metro">
             </div>
         </main>
 
         <div id="footer-placeholder"></div>
     </div>
-
-    <!-- Cart Modal (Requis pour fonctionnement du Header) -->
-    <div id="cart-modal" class="modal-overlay">
-        <div class="modal-content cart-modal-content">
-            <button class="close-modal" onclick="closeCart()">&times;</button>
-            <div class="cart-header">
-                <h3 style="font-size: var(--font-size-xl); color: var(--color-primary);">Ma Liste d'Épicerie</h3>
-                <div class="budget-control">
-                    <label for="cart-budget">Budget Max ($):</label>
-                    <input type="number" id="cart-budget" value="100" onchange="updateCartDisplay()">
-                    <span id="budget-warning" class="budget-alert" style="display:none;">⚠️ Budget dépassé !</span>
-                </div>
-            </div>
-            <div id="cart-items" class="cart-items-container">
-                <p style="text-align:center; color: var(--color-text-secondary); margin-top:20px;">Votre liste est vide.</p>
-            </div>
-            <div class="cart-footer">
-                <div class="cart-summary-row">
-                    <span>Économies estimées (vs prix moyen) :</span>
-                    <span id="cart-savings" class="cart-savings">0.00 $</span>
-                </div>
-                <div class="cart-summary-row">
-                    <span style="font-size: var(--font-size-lg); font-weight:600;">Total estimé :</span>
-                    <span id="cart-total" class="cart-total">0.00 $</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="circulaire.js"></script>
-    <script src="header_footer.js"></script>
+    
+    <!-- NOTE: Le modal Panier (#cart-modal) est injecté par header_footer.js -->
 </body>
 </html>

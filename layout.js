@@ -2,7 +2,7 @@
 // LAYOUT.JS - Gestion de l'interface utilisateur et du rendu
 // ============================================================================
 
-const storeColors = {
+const STORE_COLORS = {
     'Super C': '#EF4444',
     'Maxi': '#3B82F6',
     'IGA': '#F59E0B',
@@ -15,11 +15,11 @@ const storeColors = {
 let chartInstance = null;
 
 // ============================================================================
-// MODALES (Historique & Panier)
+// GESTION DES MODALES
 // ============================================================================
 
 /**
- * Affiche l'historique des prix dans une modale avec graphique Chart.js
+ * Affiche l'historique des prix pour un produit donné
  * @param {string} sku - Identifiant unique du produit
  */
 function openHistoryModal(sku) {
@@ -35,7 +35,45 @@ function openHistoryModal(sku) {
     if (titleEl) titleEl.textContent = title;
     if (subtitleEl) subtitleEl.textContent = subtitle;
 
-    // Préparation des données Chart.js
+    renderPriceChart(history);
+    document.getElementById('history-modal').classList.add('open');
+}
+
+/**
+ * Ferme la modale d'historique
+ */
+function closeHistoryModal() {
+    document.getElementById('history-modal').classList.remove('open');
+}
+
+/**
+ * Ouvre la modale du panier et met à jour l'affichage
+ */
+function openCart() {
+    const budgetInput = document.getElementById('cart-budget');
+    if (budgetInput && typeof userBudget !== 'undefined') {
+        budgetInput.value = userBudget;
+    }
+    updateCartDisplay();
+    document.getElementById('cart-modal').classList.add('open');
+}
+
+/**
+ * Ferme la modale du panier
+ */
+function closeCart() {
+    document.getElementById('cart-modal').classList.remove('open');
+}
+
+// ============================================================================
+// RENDU GRAPHIQUE (CHART.JS)
+// ============================================================================
+
+/**
+ * Prépare et rend le graphique Chart.js
+ * @param {Array} history - Données historiques du produit
+ */
+function renderPriceChart(history) {
     const storesMap = {};
     let minDate = new Date();
     let maxDate = new Date(0);
@@ -54,6 +92,7 @@ function openHistoryModal(sku) {
         storesMap[store].push({ x: date, y: val });
     });
 
+    // Tri temporel
     Object.values(storesMap).forEach(arr => arr.sort((a, b) => a.x - b.x));
 
     // Calcul de la zone idéale (25e percentile)
@@ -66,23 +105,21 @@ function openHistoryModal(sku) {
     const bandEnd = new Date(maxDate);
     bandEnd.setDate(bandEnd.getDate() + 7);
 
-    const datasets = [];
-    
-    // Dataset: Zone idéale
-    datasets.push({
-        label: 'Zone Idéale (Top 25%)',
-        data: [{ x: bandStart, y: p25Value }, { x: bandEnd, y: p25Value }],
-        borderColor: 'transparent',
-        backgroundColor: 'rgba(16,185,129,0.15)',
-        borderWidth: 0,
-        pointRadius: 0,
-        fill: 'start',
-        order: 99
-    });
+    const datasets = [
+        {
+            label: 'Zone Idéale (Top 25%)',
+            data: [{ x: bandStart, y: p25Value }, { x: bandEnd, y: p25Value }],
+            borderColor: 'transparent',
+            backgroundColor: 'rgba(16,185,129,0.15)',
+            borderWidth: 0,
+            pointRadius: 0,
+            fill: 'start',
+            order: 99
+        }
+    ];
 
-    // Dataset: Magasins
     Object.keys(storesMap).forEach(store => {
-        const color = storeColors[store] || storeColors.default;
+        const color = STORE_COLORS[store] || STORE_COLORS.default;
         datasets.push({
             label: store,
             data: storesMap[store],
@@ -96,7 +133,6 @@ function openHistoryModal(sku) {
         });
     });
 
-    // Rendu du graphique
     const ctx = document.getElementById('priceChart').getContext('2d');
     if (chartInstance) chartInstance.destroy();
     
@@ -113,8 +149,8 @@ function openHistoryModal(sku) {
                     callbacks: {
                         title: (ctx) => {
                             const date = new Date(ctx[0].parsed.x);
-                            const { week } = getISOWeek(date);
-                            return `${date.toLocaleDateString('fr-CA')} (Semaine ${week})`;
+                            const weekInfo = typeof getISOWeek === 'function' ? getISOWeek(date) : { week: '?' };
+                            return `${date.toLocaleDateString('fr-CA')} (Semaine ${weekInfo.week})`;
                         },
                         label: (ctx) => {
                             if (ctx.dataset.label.includes('Zone Idéale')) return null;
@@ -140,23 +176,6 @@ function openHistoryModal(sku) {
             }
         }
     });
-
-    document.getElementById('history-modal').classList.add('open');
-}
-
-function closeHistoryModal() {
-    document.getElementById('history-modal').classList.remove('open');
-}
-
-function openCart() {
-    const budgetInput = document.getElementById('cart-budget');
-    if (budgetInput) budgetInput.value = userBudget;
-    updateCartDisplay();
-    document.getElementById('cart-modal').classList.add('open');
-}
-
-function closeCart() {
-    document.getElementById('cart-modal').classList.remove('open');
 }
 
 // ============================================================================
@@ -168,7 +187,9 @@ function closeCart() {
  */
 function updateCartDisplay() {
     const budgetInput = document.getElementById('cart-budget');
-    userBudget = parseFloat(budgetInput.value) || 0;
+    if (budgetInput) {
+        userBudget = parseFloat(budgetInput.value) || 0;
+    }
     
     let total = 0;
     let savings = 0;
@@ -194,72 +215,88 @@ function updateCartDisplay() {
     });
 
     const container = document.getElementById('cart-items');
+    if (!container) return; // Sécurité si la modale n'est pas encore injectée
+    
     container.innerHTML = '';
 
     if (shoppingCart.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color: var(--color-text-secondary); margin-top:20px;">Votre liste est vide.</p>';
+        container.innerHTML = '<p class="text-center text-secondary mt-20">Votre liste est vide.</p>';
     } else {
-        Object.keys(groupedByStore).sort().forEach(store => {
-            const storeDiv = document.createElement('div');
-            storeDiv.className = 'store-group';
-            storeDiv.innerHTML = `<div class="store-group-title">${store}</div>`;
-
-            const byCat = {};
-            groupedByStore[store].forEach(item => {
-                const cat = item.categorie || 'Divers';
-                if (!byCat[cat]) byCat[cat] = [];
-                byCat[cat].push(item);
-            });
-
-            Object.keys(byCat).sort().forEach(cat => {
-                const catDiv = document.createElement('div');
-                catDiv.className = 'category-group';
-                catDiv.innerHTML = `<div class="category-title">${cat}</div>`;
-
-                byCat[cat].forEach(item => {
-                    const row = document.createElement('div');
-                    row.className = 'cart-item';
-                    row.innerHTML = `
-                        <div class="cart-item-info">
-                            <div class="cart-item-title">${item.item}</div>
-                            <div class="cart-item-meta">${item.brand || ''} • ${item.quantity} ${item.unit}</div>
-                        </div>
-                        <div class="cart-item-actions">
-                            <div class="cart-price">${item.unit_price.toFixed(2)}$</div>
-                            <button class="remove-btn" onclick="removeFromCart(${item.originalIndex})">&times;</button>
-                        </div>
-                    `;
-                    catDiv.appendChild(row);
-                });
-                storeDiv.appendChild(catDiv);
-            });
-            container.appendChild(storeDiv);
-        });
+        renderCartGroups(container, groupedByStore);
     }
 
-    const totalEl = document.getElementById('cart-total');
-    if (totalEl) totalEl.textContent = total.toFixed(2) + ' $';
-    
-    const savingsEl = document.getElementById('cart-savings');
-    if (savingsEl) savingsEl.textContent = savings.toFixed(2) + ' $';
-
-    const warning = document.getElementById('budget-warning');
-    if (warning && totalEl) {
-        if (userBudget > 0 && total > userBudget) {
-            warning.style.display = 'inline';
-            totalEl.style.color = '#ef4444';
-        } else {
-            warning.style.display = 'none';
-            totalEl.style.color = 'var(--color-text)';
-        }
-    }
-
+    updateCartTotals(total, savings);
     saveCart();
 }
 
 /**
- * Met à jour les options du sélecteur de semaine
+ * Helper pour rendre les groupes du panier
  */
+function renderCartGroups(container, groupedByStore) {
+    Object.keys(groupedByStore).sort().forEach(store => {
+        const storeDiv = document.createElement('div');
+        storeDiv.className = 'store-group';
+        storeDiv.innerHTML = `<div class="store-group-title">${store}</div>`;
+
+        const byCat = {};
+        groupedByStore[store].forEach(item => {
+            const cat = item.categorie || 'Divers';
+            if (!byCat[cat]) byCat[cat] = [];
+            byCat[cat].push(item);
+        });
+
+        Object.keys(byCat).sort().forEach(cat => {
+            const catDiv = document.createElement('div');
+            catDiv.className = 'category-group';
+            catDiv.innerHTML = `<div class="category-title">${cat}</div>`;
+
+            byCat[cat].forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'cart-item';
+                row.innerHTML = `
+                    <div class="cart-item-info">
+                        <div class="cart-item-title">${item.item}</div>
+                        <div class="cart-item-meta">${item.brand || ''} • ${item.quantity} ${item.unit}</div>
+                    </div>
+                    <div class="cart-item-actions">
+                        <div class="cart-price">${item.unit_price.toFixed(2)}$</div>
+                        <button class="remove-btn" onclick="removeFromCart(${item.originalIndex})">&times;</button>
+                    </div>
+                `;
+                catDiv.appendChild(row);
+            });
+            storeDiv.appendChild(catDiv);
+        });
+        container.appendChild(storeDiv);
+    });
+}
+
+/**
+ * Met à jour les totaux et alertes du panier
+ */
+function updateCartTotals(total, savings) {
+    const totalEl = document.getElementById('cart-total');
+    const savingsEl = document.getElementById('cart-savings');
+    const warning = document.getElementById('budget-warning');
+
+    if (totalEl) totalEl.textContent = `${total.toFixed(2)} $`;
+    if (savingsEl) savingsEl.textContent = `${savings.toFixed(2)} $`;
+
+    if (warning && totalEl) {
+        if (userBudget > 0 && total > userBudget) {
+            warning.classList.remove('hidden');
+            totalEl.classList.add('text-danger');
+        } else {
+            warning.classList.add('hidden');
+            totalEl.classList.remove('text-danger');
+        }
+    }
+}
+
+// ============================================================================
+// NAVIGATION & FILTRES
+// ============================================================================
+
 function updateWeekSelector() {
     const sel = document.getElementById('week-selector');
     if (!sel) return;
@@ -276,9 +313,6 @@ function updateWeekSelector() {
     if (currentWeek) sel.value = currentWeek;
 }
 
-/**
- * Met à jour l'état des boutons de navigation (précédent/suivant)
- */
 function updateNavigationButtons() {
     const idx = availableWeeks.indexOf(currentWeek);
     const prev = document.getElementById('prev-week');
@@ -298,13 +332,13 @@ function updateNavigationButtons() {
 }
 
 // ============================================================================
-// RENDU DES ITEMS
+// RENDU DES ITEMS (GRID)
 // ============================================================================
 
 /**
- * Génère le HTML pour l'affichage du prix unitaire
+ * Calcule l'affichage du prix unitaire normalisé
  */
-function calculateUnitPrice(item) {
+function calculateUnitPriceHtml(item) {
     if (!item.unit_price || !item.quantity || !item.unit) return '';
     
     const val = getSortableUnitPrice(item);
@@ -317,11 +351,11 @@ function calculateUnitPrice(item) {
     else if (u === 'ml' || u === 'l') label = '$/100ml';
     else if (u !== 'un') label = `$/${u}`;
     
-    return `<span style="font-size:12px;color:var(--color-text-secondary);">(${val.toFixed(2)} ${label})</span>`;
+    return `<span class="price-unit-label">(${val.toFixed(2)} ${label})</span>`;
 }
 
 /**
- * Génère le HTML pour un badge et les insights
+ * Génère le HTML pour les badges et insights
  */
 function generateInsightsHtml(item, currentWeekItems, items) {
     const insights = computeDealInsights(item, currentWeekItems || items) || null;
@@ -336,8 +370,8 @@ function generateInsightsHtml(item, currentWeekItems, items) {
             ? `${insights.pctVsCompetitor < 0 ? '' : '+'}${insights.pctVsCompetitor.toFixed(0)}% vs meilleur concurrent` 
             : '';
         const last = Number.isFinite(insights.lastTimeWeeks) 
-            ? `Dernière fois à ce prix : il y a ${insights.lastTimeWeeks} semaine${insights.lastTimeWeeks > 1 ? 's' : '<div class="detail-row empty"></div>'}` 
-            : '<div class="detail-row empty"></div>';
+            ? `Dernière fois à ce prix : il y a ${insights.lastTimeWeeks} semaine${insights.lastTimeWeeks > 1 ? 's' : ''}` 
+            : '';
         
         const parts = [vsAvg, vsComp].filter(Boolean).join('  |  ');
         const detail = [parts, last].filter(Boolean).join('\n');
@@ -351,49 +385,60 @@ function generateInsightsHtml(item, currentWeekItems, items) {
 }
 
 /**
+ * Génère le HTML d'une carte produit
+ */
+function createItemCard(item, badgeHtml, linesHtml, othersHtml = '') {
+    const sku = skuKey(item).replace(/['"\\]/g, '\\$&');
+    const itemJson = JSON.stringify(item).replace(/"/g, '&quot;');
+    
+    return `
+        <article class="item-card">
+            <div class="item-header">
+                <div class="item-name" title="${item.item}">${item.item || 'Sans nom'}</div>
+                ${item.categorie ? `<div class="item-category">${item.categorie}</div>` : ''}
+                <div class="add-item">
+                    <button class="add-to-list-btn" onclick="addToCart(${itemJson})" title="Ajouter à ma liste">+</button>
+                </div>
+            </div>
+            <div class="item-details">
+                ${item.brand ? `<div class="detail-row"><span class="detail-label">Marque:</span><span class="detail-value">${item.brand}</span></div>` : '<div class="detail-row empty"></div>'}
+                ${item.unit ? `<div class="detail-row"><span class="detail-label">Unité:</span><span class="detail-value">${item.quantity || 1} ${item.unit}</span></div>` : '<div class="detail-row empty"></div>'}
+            </div>
+            <div class="item-price">
+                ${item.unit_price ? `
+                    <div class="flex-center gap-12" style="align-items:baseline;">
+                        <span class="font-2xl font-bold">${item.unit_price.toFixed(2)} $</span>
+                        ${calculateUnitPriceHtml(item)}
+                    </div>
+                    ${badgeHtml}
+                    ${linesHtml}
+                    ${othersHtml}
+                ` : 'Prix non disponible'}
+            </div>
+            <div class="item-store">
+                <span class="store-name">${item.store_name || 'Magasin inconnu'}</span>
+                <span class="item-date">${item.date ? new Date(item.date).toLocaleDateString('fr-CA') : ''}</span>
+            </div>
+            <button class="view-history-btn" onclick="openHistoryModal('${sku}')">📈 Voir l'historique complet</button>
+        </article>
+    `;
+}
+
+/**
  * Affiche la liste des items (Mode Standard)
  */
 function displayItems(items, currentWeekItems = null) {
     const container = document.getElementById('items-container');
-    
+    if (!container) return;
+
     if (items.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color: var(--color-text-secondary); grid-column:1/-1;">Aucune aubaine trouvée pour les critères sélectionnés.</p>';
+        container.innerHTML = '<p class="text-center text-secondary" style="grid-column:1/-1;">Aucune aubaine trouvée pour les critères sélectionnés.</p>';
         return;
     }
     
     container.innerHTML = items.map(item => {
         const { badgeHtml, linesHtml } = generateInsightsHtml(item, currentWeekItems, items);
-        const sku = skuKey(item).replace(/['"\\]/g, '\\$&');
-        const itemJson = JSON.stringify(item).replace(/"/g, '&quot;');
-        
-        return `
-            <div class="item-card">
-                <div class="item-header">
-                    <div class="item-name">${item.item || 'Sans nom'}</div>
-                    ${item.categorie ? `<div class="item-category">${item.categorie}</div>` : ''}
-                    <div class="add-item"><button class="add-to-list-btn" onclick="addToCart(${itemJson})" title="Ajouter à ma liste">+</button></div>
-                </div>
-                <div class="item-details">
-                    ${item.brand ? `<div class="detail-row"><span class="detail-label">Marque:</span><span class="detail-value">${item.brand}</span></div>` : '<div class="detail-row empty"></div>'}
-                    ${item.unit ? `<div class="detail-row"><span class="detail-label">Unité:</span><span class="detail-value">${item.quantity || 1} ${item.unit}</span></div>` : '<div class="detail-row empty"></div>'}
-                </div>
-                <div class="item-price">
-                    ${item.unit_price ? `
-                        <div style="display:flex; align-items:baseline; gap:8px;">
-                            <span style="font-size: var(--font-size-2xl); font-weight:600;">${item.unit_price.toFixed(2)} $</span>
-                            ${calculateUnitPrice(item)}
-                        </div>
-                        ${badgeHtml}
-                        ${linesHtml}
-                    ` : 'Prix non disponible'}
-                </div>
-                <div class="item-store">
-                    <span class="store-name">${item.store_name || 'Magasin inconnu'}</span>
-                    <span class="item-date">${item.date ? new Date(item.date).toLocaleDateString('fr-CA') : ''}</span>
-                </div>
-                <button class="view-history-btn" onclick="openHistoryModal('${sku}')">📈 Voir l'historique complet</button>
-            </div>
-        `;
+        return createItemCard(item, badgeHtml, linesHtml);
     }).join('');
 }
 
@@ -402,13 +447,14 @@ function displayItems(items, currentWeekItems = null) {
  */
 function displayItemsCompact(items, currentWeekItems = null) {
     const container = document.getElementById('items-container');
-    
+    if (!container) return;
+
     if (!items || items.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color: var(--color-text-secondary); grid-column:1/-1;">Aucune aubaine trouvée pour les critères sélectionnés.</p>';
+        container.innerHTML = '<p class="text-center text-secondary" style="grid-column:1/-1;">Aucune aubaine trouvée pour les critères sélectionnés.</p>';
         return;
     }
     
-    // Regroupement
+    // Regroupement par Nom + Marque
     const groups = new Map();
     for (const it of items) {
         const key = `${(it.item||'').trim().toLowerCase()}__${(it.brand||'').trim().toLowerCase()}`;
@@ -419,6 +465,7 @@ function displayItemsCompact(items, currentWeekItems = null) {
     const compacted = [];
     groups.forEach(arr => {
         if (arr.length === 0) return;
+        // Tri interne pour trouver le meilleur prix du groupe
         arr.sort((a, b) => {
             const ua = getSortableUnitPrice(a);
             const ub = getSortableUnitPrice(b);
@@ -430,58 +477,27 @@ function displayItemsCompact(items, currentWeekItems = null) {
         compacted.push({ best, others });
     });
 
-    // Tri des groupes
+    // Tri des groupes selon le filtre actif (logique simplifiée ici, voir script.js pour le tri principal)
     const sortVal = document.getElementById('filter-sort').value;
     compacted.sort((A, B) => {
         const a = A.best, b = B.best;
         if (sortVal === 'price-asc') return (a.unit_price || 0) - (b.unit_price || 0);
         if (sortVal === 'price-desc') return (b.unit_price || 0) - (a.unit_price || 0);
-        return 0; // Simplifié pour brevity, logique complète dans script.js
+        return 0;
     });
     
     container.innerHTML = compacted.map(g => {
         const item = g.best;
         const { badgeHtml, linesHtml } = generateInsightsHtml(item, currentWeekItems, items);
-        const sku = skuKey(item).replace(/['"\\]/g, '\\$&');
-        const itemJson = JSON.stringify(item).replace(/"/g, '&quot;');
         const othersHtml = g.others.length 
-            ? `<div class="deal-insights" style="margin-top:6px;"><div class="deal-line"><strong>Autres enseignes:</strong> ${g.others.join(' • ')}</div></div>` 
+            ? `<div class="deal-insights"><div class="deal-line"><strong>Autres enseignes:</strong> ${g.others.join(' • ')}</div></div>` 
             : '';
-        
-        return `
-            <div class="item-card">
-                <div class="item-header">
-                    <div class="item-name">${item.item || 'Sans nom'}</div>
-                    ${item.categorie ? `<div class="item-category">${item.categorie}</div>` : ''}
-                    <div class="add-item"><button class="add-to-list-btn" onclick="addToCart(${itemJson})" title="Ajouter à ma liste">+</button></div>
-                </div>
-                <div class="item-details">
-                    ${item.brand ? `<div class="detail-row"><span class="detail-label">Marque:</span><span class="detail-value">${item.brand}</span></div>` : '<div class="detail-row empty"></div>'}
-                    ${item.unit ? `<div class="detail-row"><span class="detail-label">Unité:</span><span class="detail-value">${item.quantity || 1} ${item.unit}</span></div>` : '<div class="detail-row empty"></div>'}
-                </div>
-                <div class="item-price">
-                    ${item.unit_price ? `
-                        <div style="display:flex; align-items:baseline; gap:8px;">
-                            <span style="font-size: var(--font-size-2xl); font-weight:600;">${item.unit_price.toFixed(2)} $</span>
-                            ${calculateUnitPrice(item)}
-                        </div>
-                        ${badgeHtml}
-                        ${linesHtml}
-                        ${othersHtml}
-                    ` : 'Prix non disponible'}
-                </div>
-                <div class="item-store">
-                    <span class="store-name">${item.store_name || 'Magasin inconnu'}</span>
-                    <span class="item-date">${item.date ? new Date(item.date).toLocaleDateString('fr-CA') : ''}</span>
-                </div>
-                <button class="view-history-btn" onclick="openHistoryModal('${sku}')">📈 Voir l'historique complet</button>
-            </div>
-        `;
+        return createItemCard(item, badgeHtml, linesHtml, othersHtml);
     }).join('');
 }
 
 /**
- * Routeur d'affichage (Standard ou Compact)
+ * Routeur d'affichage
  */
 function renderList(items, currentWeekItems = null) {
     const compact = document.getElementById('compact-mode')?.checked;
@@ -493,7 +509,7 @@ function renderList(items, currentWeekItems = null) {
 }
 
 /**
- * Initialise les filtres dynamiques (Magasins & Catégories)
+ * Initialise les filtres dynamiques (Checkbox Magasins)
  */
 function populateFilters() {
     const stores = [...new Set(allItems.map(i => i.store_name))].filter(Boolean).sort();
@@ -523,6 +539,7 @@ function populateFilters() {
     // Select Catégories
     const catSel = document.getElementById('filter-category');
     if (catSel) {
+        // Garder uniquement l'option par défaut
         while (catSel.options.length > 1) catSel.remove(1);
         cats.forEach(c => {
             const opt = document.createElement('option');
@@ -533,20 +550,10 @@ function populateFilters() {
     }
 }
 
-// Initialisation des écouteurs de fermeture de modale
+// Initialisation des écouteurs de fermeture de modale (Event Delegation)
 window.addEventListener('DOMContentLoaded', function() {
-    const historyModal = document.getElementById('history-modal');
-    const cartModal = document.getElementById('cart-modal');
-    
-    if (historyModal) {
-        historyModal.addEventListener('click', e => {
-            if (e.target.id === 'history-modal') closeHistoryModal();
-        });
-    }
-    
-    if (cartModal) {
-        cartModal.addEventListener('click', e => {
-            if (e.target.id === 'cart-modal') closeCart();
-        });
-    }
+    document.addEventListener('click', e => {
+        if (e.target.id === 'history-modal') closeHistoryModal();
+        if (e.target.id === 'cart-modal') closeCart();
+    });
 });

@@ -1,7 +1,7 @@
 /* ============================================================================
    VARIABLES CSS - DESIGN SYSTEM
    ============================================================================ */
-   :root {
+:root {
     /* Couleurs de base */
     --color-cream-50: rgba(252, 252, 249, 1);
     --color-cream-100: rgba(255, 255, 253, 1);
@@ -21,6 +21,7 @@
     --color-brown-600-rgb: 94, 82, 64;
     --color-teal-500-rgb: 33, 128, 141;
     --color-slate-900-rgb: 19, 52, 59;
+    --color-gray-400-rgb: 119, 124, 124;
     
     /* Couleurs sémantiques */
     --color-background: var(--color-cream-50);
@@ -32,6 +33,8 @@
     --color-primary-active: var(--color-teal-700);
     --color-border: rgba(var(--color-brown-600-rgb), 0.2);
     --color-card-border: rgba(var(--color-brown-600-rgb), 0.12);
+    --color-danger: #ef4444;
+    --color-success: #10b981;
     
     /* Typographie */
     --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -58,9 +61,6 @@
 /* Mode sombre */
 @media (prefers-color-scheme: dark) {
     :root {
-        --color-gray-400-rgb: 119, 124, 124;
-        --color-teal-300-rgb: 50, 184, 198;
-        --color-gray-200-rgb: 245, 245, 245;
         --color-background: var(--color-charcoal-700);
         --color-surface: var(--color-charcoal-800);
         --color-text: var(--color-gray-200);
@@ -91,10 +91,26 @@ body {
     overflow: hidden;
 }
 
+/* Utilitaires de texte et alignement (remplace les styles inline) */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-danger { color: var(--color-danger); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-primary { color: var(--color-primary); }
+.font-xl { font-size: var(--font-size-xl); }
+.font-lg { font-size: var(--font-size-lg); }
+.font-bold { font-weight: 600; }
+.mt-20 { margin-top: var(--space-20); }
+.mb-8 { margin-bottom: var(--space-8); }
+.mb-16 { margin-bottom: var(--space-16); }
+.mb-24 { margin-bottom: var(--space-24); }
+.flex-center { display: flex; align-items: center; }
+.gap-12 { gap: var(--space-12); }
+.hidden { display: none; }
+
 /* ============================================================================
    LAYOUT - CONTENEURS SPÉCIFIQUES
    ============================================================================ */
-/* Conteneur principal pour la page Circulaire */
 #container {
     display: flex;
     flex-direction: column;
@@ -102,7 +118,6 @@ body {
     flex: 1;
 }
 
-/* Zone centrale (Page Circulaire) */
 #content {
     flex: 1;
     display: flex;
@@ -112,7 +127,6 @@ body {
     background: var(--color-background);
 }
 
-/* Wrapper pour Index et Mentions Légales */
 .content-wrapper {
     flex: 1;
     display: flex;
@@ -155,17 +169,13 @@ header {
     width: 100%;
 }
 
-.logo { 
-    margin-bottom: var(--space-16); 
-}
-
+.logo { margin-bottom: var(--space-16); }
 .logo h1 { 
     font-size: var(--font-size-2xl); 
     color: var(--color-primary); 
     font-weight: 600; 
     line-height: 1.2; 
 }
-
 .logo p { 
     font-size: var(--font-size-sm); 
     color: var(--color-text-secondary); 
@@ -175,10 +185,7 @@ header {
 /* ============================================================================
    NAVIGATION
    ============================================================================ */
-nav { 
-    width: 100%; 
-}
-
+nav { width: 100%; }
 nav ul { 
     list-style: none; 
     display: flex; 
@@ -195,7 +202,6 @@ nav a {
     display: block;
     padding: 8px 0;
 }
-
 nav a:hover, .footer-link:hover { 
     color: var(--color-primary); 
     transform: translateX(4px); 
@@ -217,19 +223,14 @@ nav a:hover, .footer-link:hover {
     width: 100%;
     transition: background 0.2s;
 }
+.cart-btn:hover { background: var(--color-primary-hover); }
 
-.cart-btn:hover { 
-    background: var(--color-primary-hover); 
-}
-
-/* Sidebar Filter Section */
 .sidebar-filter {
     margin-top: var(--space-24);
     padding-top: var(--space-24);
     border-top: 1px solid var(--color-border);
     width: 100%;
 }
-
 .sidebar-filter h3 {
     font-size: var(--font-size-base);
     font-weight: 600;
@@ -237,14 +238,12 @@ nav a:hover, .footer-link:hover {
     color: var(--color-text);
 }
 
-/* Nav Subsection - Store list */
 .nav-subsection {
     margin-top: var(--space-8);
     margin-left: var(--space-12);
     padding-left: var(--space-12);
     border-left: 2px solid var(--color-border);
 }
-
 .nav-subsection .store-list {
     max-height: 300px;
     overflow-y: auto;
@@ -260,7 +259,6 @@ nav a:hover, .footer-link:hover {
     font-size: var(--font-size-sm); 
     user-select: none; 
 }
-
 .store-checkbox-label input { 
     accent-color: var(--color-primary); 
     width: 14px; 
@@ -268,8 +266,49 @@ nav a:hover, .footer-link:hover {
 }
 
 /* ============================================================================
-   FILTRES (Page Principale)
+   PAGE D'ACCUEIL (FILTRES ET CONTROLES)
    ============================================================================ */
+.week-controls {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: var(--space-24); 
+    flex-wrap: wrap; 
+    gap: var(--space-16);
+}
+
+.week-navigation {
+    display: flex; 
+    gap: var(--space-12); 
+    align-items: center;
+}
+
+.btn-secondary {
+    padding: 8px 16px; 
+    border: 1px solid var(--color-border); 
+    border-radius: var(--radius-base); 
+    background: var(--color-surface); 
+    color: var(--color-text); 
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-secondary:hover:not(:disabled) {
+    background: var(--color-gray-200);
+}
+.btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.select-input {
+    padding: 8px 12px; 
+    border: 1px solid var(--color-border); 
+    border-radius: var(--radius-base); 
+    background: var(--color-surface); 
+    color: var(--color-text); 
+    min-width: 200px;
+}
+
 .filters { 
     background: var(--color-surface); 
     padding: var(--space-16); 
@@ -289,14 +328,12 @@ nav a:hover, .footer-link:hover {
     min-width: 180px;
     max-width: 350px;
 }
-
 .filter-group label { 
     display: block; 
     margin-bottom: var(--space-8); 
     font-weight: 500; 
     font-size: var(--font-size-sm); 
 }
-
 .filter-group select, 
 .filter-group input[type="text"] { 
     width: 100%; 
@@ -317,14 +354,12 @@ nav a:hover, .footer-link:hover {
     height: 38px; 
     margin-bottom: 2px;
 }
-
 .filter-group-checkbox label {
     margin: 0;
     cursor: pointer;
     font-weight: 500;
     font-size: var(--font-size-sm);
 }
-
 .filter-group-checkbox input[type="checkbox"] {
     width: 18px;
     height: 18px;
@@ -333,7 +368,7 @@ nav a:hover, .footer-link:hover {
 }
 
 /* ============================================================================
-   FLYER CARDS (Page Circulaire)
+   PAGE CIRCULAIRE (CARDS)
    ============================================================================ */
 .flyer-card {
     width: 250px;
@@ -349,12 +384,10 @@ nav a:hover, .footer-link:hover {
     background: var(--color-surface);
     box-shadow: var(--shadow-sm);
 }
-
 .flyer-card:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-
 .flyer-card img {
     width: 100%;
     height: 100%;
@@ -381,7 +414,6 @@ nav a:hover, .footer-link:hover {
     transition: transform 0.2s, box-shadow 0.2s; 
     position: relative; 
 }
-
 .item-card:hover { 
     transform: translateY(-2px); 
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
@@ -415,34 +447,26 @@ nav a:hover, .footer-link:hover {
     font-size: var(--font-size-sm); 
 }
 
-.item-details { 
-    margin: var(--space-12) 0; 
-}
-
+.item-details { margin: var(--space-12) 0; }
 .detail-row { 
     display: flex; 
     justify-content: space-between; 
     margin-bottom: var(--space-8); 
     font-size: var(--font-size-sm); 
 }
-
-.empty::before {
-    content: "\200B";
-}
-
-.detail-label { 
-    color: var(--color-text-secondary);
-}
-
-.detail-value { 
-    font-weight: 500; 
-}
+.empty::before { content: "\200B"; }
+.detail-label { color: var(--color-text-secondary); }
+.detail-value { font-weight: 500; }
 
 .item-price { 
     font-size: var(--font-size-xl); 
     font-weight: 600; 
     color: var(--color-primary); 
     margin: var(--space-12) 0; 
+}
+.price-unit-label {
+    font-size: 12px;
+    color: var(--color-text-secondary);
 }
 
 .item-store { 
@@ -452,19 +476,13 @@ nav a:hover, .footer-link:hover {
     padding-top: var(--space-12); 
     border-top: 1px solid var(--color-border); 
 }
-
-.store-name { 
-    font-weight: 500; 
-}
-
+.store-name { font-weight: 500; }
 .item-date { 
     font-size: var(--font-size-sm); 
     color: var(--color-text-secondary); 
 }
 
 .add-to-list-btn { 
-    top: var(--space-16); 
-    right: var(--space-16); 
     background: var(--color-surface); 
     border: 1px solid var(--color-border); 
     width: 32px; 
@@ -479,7 +497,6 @@ nav a:hover, .footer-link:hover {
     transition: all 0.2s;
     margin: 0px 5px;
 }
-
 .add-to-list-btn:hover { 
     background: var(--color-primary); 
     color: #fff; 
@@ -487,7 +504,7 @@ nav a:hover, .footer-link:hover {
 }
 
 /* ============================================================================
-   ÉTATS DE CHARGEMENT & ERREUR
+   ETATS DE CHARGEMENT & ERREUR
    ============================================================================ */
 .loading { 
     text-align: center; 
@@ -495,7 +512,6 @@ nav a:hover, .footer-link:hover {
     font-size: var(--font-size-lg); 
     color: var(--color-text-secondary); 
 }
-
 .error { 
     background: rgba(192, 21, 47, 0.1); 
     border: 1px solid rgba(192, 21, 47, 0.3); 
@@ -516,12 +532,10 @@ nav a:hover, .footer-link:hover {
     font-weight: 600; 
     line-height: 1.4; 
 }
-
 .badge-best { background: linear-gradient(90deg, #ff6a3d, #ff3d3d); color: #fff; }
 .badge-excellent { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35); }
 .badge-good { background: rgba(59, 130, 246, 0.12); color: #1d4ed8; border: 1px solid rgba(29, 78, 216, 0.25); }
 .badge-regular { background: rgba(107, 114, 128, 0.12); color: #6b7280; border: 1px solid rgba(107, 114, 128, 0.25); }
-
 .deal-insights { margin-top: 6px; }
 .deal-line { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
 
@@ -540,12 +554,10 @@ nav a:hover, .footer-link:hover {
     pointer-events: none; 
     transition: opacity 0.3s ease; 
 }
-
 .modal-overlay.open { 
     opacity: 1; 
     pointer-events: all; 
 }
-
 .modal-content { 
     background: var(--color-surface); 
     border-radius: var(--radius-lg); 
@@ -570,7 +582,6 @@ nav a:hover, .footer-link:hover {
     cursor: pointer; 
     z-index: 10; 
 }
-
 .close-modal:hover { color: var(--color-text); }
 
 .chart-container { 
@@ -597,11 +608,10 @@ nav a:hover, .footer-link:hover {
     width: 100%; 
     justify-content: center; 
 }
-
 .view-history-btn:hover { background: rgba(33, 128, 141, 0.1); }
 
 /* ============================================================================
-   CART MODAL
+   CART MODAL & CONTENT
    ============================================================================ */
 .cart-modal-content { 
     max-width: 600px; 
@@ -610,13 +620,11 @@ nav a:hover, .footer-link:hover {
     flex-direction: column; 
     max-height: 85vh; 
 }
-
 .cart-header { 
     border-bottom: 1px solid var(--color-border); 
     padding-bottom: var(--space-16); 
     margin-bottom: var(--space-16); 
 }
-
 .budget-control { 
     display: flex; 
     align-items: center; 
@@ -626,16 +634,14 @@ nav a:hover, .footer-link:hover {
     padding: 8px; 
     border-radius: 6px; 
 }
-
 .budget-control input { 
     width: 100px; 
     padding: 4px 8px; 
     border: 1px solid var(--color-border); 
     border-radius: 4px; 
 }
-
 .budget-alert { 
-    color: #ef4444; 
+    color: var(--color-danger); 
     font-size: var(--font-size-sm); 
     font-weight: 600; 
 }
@@ -645,9 +651,7 @@ nav a:hover, .footer-link:hover {
     flex: 1; 
     padding-right: 8px; 
 }
-
 .store-group { margin-bottom: var(--space-24); }
-
 .store-group-title { 
     font-size: var(--font-size-lg); 
     font-weight: 600; 
@@ -656,12 +660,10 @@ nav a:hover, .footer-link:hover {
     padding-bottom: 4px; 
     border-bottom: 2px solid rgba(0, 0, 0, 0.05); 
 }
-
 .category-group { 
     margin-left: var(--space-12); 
     margin-bottom: var(--space-12); 
 }
-
 .category-title { 
     font-size: var(--font-size-sm); 
     font-weight: 600; 
@@ -670,7 +672,6 @@ nav a:hover, .footer-link:hover {
     letter-spacing: .05em; 
     margin-bottom: 4px; 
 }
-
 .cart-item { 
     display: flex; 
     justify-content: space-between; 
@@ -678,21 +679,17 @@ nav a:hover, .footer-link:hover {
     padding: 8px 0; 
     border-bottom: 1px solid var(--color-card-border); 
 }
-
 .cart-item-info { flex: 1; }
 .cart-item-title { font-weight: 500; }
 .cart-item-meta { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
-
 .cart-item-actions { 
     display: flex; 
     align-items: center; 
     gap: 12px; 
 }
-
 .cart-price { font-weight: 600; }
-
 .remove-btn { 
-    color: #ef4444; 
+    color: var(--color-danger); 
     background: none; 
     border: none; 
     cursor: pointer; 
@@ -705,15 +702,58 @@ nav a:hover, .footer-link:hover {
     padding-top: var(--space-16); 
     margin-top: var(--space-16); 
 }
-
 .cart-summary-row { 
     display: flex; 
     justify-content: space-between; 
     margin-bottom: 4px; 
 }
-
 .cart-total { font-size: var(--font-size-xl); font-weight: 700; color: var(--color-text); }
-.cart-savings { color: #10b981; font-weight: 500; }
+.cart-savings { color: var(--color-success); font-weight: 500; }
+
+.btn-primary {
+    padding: 10px 15px;
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-primary:hover { background-color: var(--color-primary-hover); }
+
+/* ============================================================================
+   PAGE MENTIONS LÉGALES
+   ============================================================================ */
+.legal-content h1 {
+    font-size: var(--font-size-3xl);
+    color: var(--color-primary);
+    margin-bottom: var(--space-24);
+    border-bottom: 2px solid var(--color-border);
+    padding-bottom: var(--space-8);
+}
+.legal-content section {
+    margin-bottom: var(--space-24);
+    background: var(--color-surface);
+    padding: var(--space-24);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-card-border);
+    box-shadow: var(--shadow-sm);
+}
+.legal-content h2 {
+    font-size: var(--font-size-xl);
+    color: var(--color-text);
+    margin-bottom: var(--space-12);
+    font-weight: 600;
+}
+.legal-content p {
+    margin-bottom: var(--space-8);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+}
+.legal-content a {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
 
 /* ============================================================================
    FOOTER
@@ -724,7 +764,20 @@ footer {
     background: var(--color-background);
     margin-top: auto;
 }
-
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-16);
+}
+.footer-links-list {
+    list-style: none;
+    display: flex;
+    gap: var(--space-16);
+}
 .footer-link {
     text-decoration: none;
     font-size: var(--font-size-base);
@@ -741,12 +794,10 @@ footer {
         overflow: auto; 
         height: auto; 
     }
-    
     .content-wrapper { 
         height: auto; 
         overflow: visible; 
     }
-    
     header { 
         width: 100%; 
         height: auto; 
@@ -754,14 +805,12 @@ footer {
         border-bottom: 1px solid var(--color-border); 
         position: relative; 
     }
-    
     .header-container { 
         flex-direction: row; 
         flex-wrap: wrap; 
         align-items: center; 
         justify-content: space-between; 
     }
-    
     nav { width: auto; }
     nav ul { flex-direction: row; }
     
@@ -769,39 +818,30 @@ footer {
         flex-direction: column;
         align-items: stretch;
     }
-    
     .filter-group,
     .filter-group-checkbox {
         max-width: 100%;
         width: 100%;
     }
-    
     .sidebar-filter { 
         width: 100%; 
         margin-top: var(--space-12); 
         padding-top: var(--space-12); 
     }
-    
     .logo { margin-bottom: 0; }
     
-    /* Layout spécifique page circulaire mobile */
-    #container {
-        height: auto;
-    }
-    
+    #container { height: auto; }
     #content {
         flex-direction: column;
         gap: var(--space-20);
     }
-    
     .items-grid { grid-template-columns: 1fr; }
     
     .footer-container { 
         flex-direction: column; 
         text-align: center; 
     }
-    
-    .footer-links ul { 
+    .footer-links-list { 
         flex-direction: column; 
         gap: var(--space-8); 
     }
